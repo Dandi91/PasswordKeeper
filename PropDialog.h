@@ -9,6 +9,7 @@
 //*)
 
 #include <wx/string.h>
+#include "CryptoFile.h"
 
 typedef enum
 {
@@ -24,15 +25,19 @@ class PropDialog: public wxDialog
 		PropDialog(wxWindow* parent,wxWindowID id=wxID_ANY);
 		virtual ~PropDialog();
 
-		const int ShowModalEx(wxString& name, wxString& password, const ShowMode mode);
+		const int ShowModalEx(wxString& name, CRecord& rec, const ShowMode mode);
 
 		//(*Declarations(PropDialog)
 		wxTextCtrl* edName;
 		wxStaticText* StaticText2;
+		wxTextCtrl* edEmail;
 		wxBoxSizer* BoxSizer;
 		wxStaticText* StaticText1;
+		wxStaticText* StaticText3;
 		wxTextCtrl* edPass;
 		wxStdDialogButtonSizer* dbSizer;
+		wxTextCtrl* edLogin;
+		wxStaticText* StaticText4;
 		//*)
 
 	protected:
@@ -40,6 +45,10 @@ class PropDialog: public wxDialog
 		//(*Identifiers(PropDialog)
 		static const long ID_STATICTEXT2;
 		static const long ID_EDNAME;
+		static const long ID_STATICTEXT3;
+		static const long ID_EDLOGIN;
+		static const long ID_STATICTEXT4;
+		static const long ID_EDEMAIL;
 		static const long ID_STATICTEXT1;
 		static const long ID_EDPASS;
 		//*)

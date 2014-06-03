@@ -1,3 +1,7 @@
+# Current ignores
+*.layout
+*.depend
+
 #################
 ## Eclipse
 #################

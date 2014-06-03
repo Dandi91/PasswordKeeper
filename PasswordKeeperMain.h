@@ -17,6 +17,8 @@
 #include <wx/frame.h>
 #include <wx/statusbr.h>
 //*)
+
+#include "CryptoFile.h"
 #include <wx/listbox.h>
 #include <wx/panel.h>
 
@@ -33,7 +35,10 @@ class PasswordKeeperFrame: public wxFrame
         wxBoxSizer* BoxSizer;
         wxListBox* lbList;
         wxWindow* GetTabPage();
+
         void UpdateInterface();
+        CCryptoFile& CurrentFile();
+        wxString CurrentLine();
 
         //(*Handlers(PasswordKeeperFrame)
         void OnQuit(wxCommandEvent& event);
@@ -50,6 +55,7 @@ class PasswordKeeperFrame: public wxFrame
         void OnmiEditSelected(wxCommandEvent& event);
         void OnmiDeleteSelected(wxCommandEvent& event);
         void OnmiMergeSelected(wxCommandEvent& event);
+        void OnClose(wxCloseEvent& event);
         //*)
 
         void OnListClick(wxCommandEvent& event);

@@ -9,7 +9,7 @@ const key_t CLOSE_KEY = 0x13220F19;
 
 CCryptoFile::CCryptoFile()
 {
-  isSaved = false;
+  isSaved = true;
 }
 
 CCryptoFile::CCryptoFile(const wxString& path)
@@ -17,19 +17,12 @@ CCryptoFile::CCryptoFile(const wxString& path)
   fpath = path;
   fname = fpath.AfterLast('\\').BeforeLast('.');
   if (!path.Cmp('?'))
-    isSaved = false;
+  {
+    isSaved = true;
+    fname = '?';
+  }
   else
     isSaved = ReadFile();
-}
-
-const wxString& CCryptoFile::GetFileName()
-{
-  return fname;
-}
-
-const wxString& CCryptoFile::GetFilePath()
-{
-  return fpath;
 }
 
 void CCryptoFile::SetFilePath(const wxString& path)
@@ -40,17 +33,30 @@ void CCryptoFile::SetFilePath(const wxString& path)
 
 void CCryptoFile::MergeWith(const CCryptoFile& second)
 {
-  CContent* c1 = &this.content;
-  const CContent* c2 = &second.content;
+  const CContent* content2 = &second.content;
   CContent::const_iterator i;
-  for (i = c2->begin(); i != c2->end(); ++i)
+  for (i = content2->begin(); i != content2->end(); ++i)
   {
-    wxString s = i->first;
-    if (c1->find(s) != c1->end())
-      s += '2';
-    (*c1)[s] = i->second;
+    wxString content2_key = i->first;
+    CContent::iterator found = content.find(content2_key);
+    if (found != content.end())
+    {
+      // If key is already in content
+      if (found->second != i->second)
+      {
+        // If records are different, add new to content
+        content2_key += "_2";
+        content[content2_key] = i->second;
+        isSaved = false;
+      }
+    }
+    else
+    {
+      // If key is new, write it as is
+      content[content2_key] = i->second;
+      isSaved = false;
+    }
   }
-  isSaved = false;
 }
 
 bool CCryptoFile::ReadFile()
@@ -81,9 +87,16 @@ bool CCryptoFile::ReadFile()
   for (size_t i = 0; i < buff.GetCount(); ++i)
     buff[i] ^= key;
 
-  // detect utf-8
+  // detect format
   char* p = (char*)(&buff[0]);
-  bool isUnicode = (*p == 0x00);
+  char format = *p;
+  bool isNewFormat = false;
+  bool isUnicode = false;
+  if (format != '[')
+  {
+    isNewFormat = (format & CF_NEWFORMAT);
+    isUnicode = (format & CF_UNICODE);
+  }
 
   // parse to string array
   wxString s;
@@ -98,8 +111,16 @@ bool CCryptoFile::ReadFile()
     long res = s.Find("\r\n");
     wxString entry = s.SubString(0, res - 1);
     wxString value;
-    entry = entry.BeforeFirst('=', &value);
-    content[entry] = value;
+    wxString name = entry.BeforeFirst('=', &value);
+    if (isNewFormat)
+    {
+      CRecord rec;
+      rec.login = value.BeforeFirst('=', &entry);
+      rec.email = entry.BeforeFirst('=', &rec.password);
+      content[name] = rec;
+    }
+    else
+      content[name].password = value;
     s.Remove(0, res + 2);
   }
   content.erase("");
@@ -113,13 +134,20 @@ key_t GenerateKey()
   return (((key_t)rand() << 16) | (key_t)rand()) * 2;
 }
 
-bool CCryptoFile::WriteFile(bool isUnicode)
+bool CCryptoFile::WriteFile(const bool isUnicode, const bool isNewFormat)
 {
   // parse to string
   wxString s;
   CContent::iterator it;
   for (it = content.begin(); it != content.end(); ++it)
-    s += it->first + "=" + it->second + "\r\n";
+  {
+    CRecord* rec = &it->second;
+    if (isNewFormat)
+      s += it->first + "=" + rec->login + "=" +
+          rec->email + "=" + rec->password + "\r\n";
+    else
+      s += it->first + "=" + rec->password + "\r\n";
+  }
   s.Prepend("[Main]\r\n");
   s.Append("\r\n");
 
@@ -130,18 +158,23 @@ bool CCryptoFile::WriteFile(bool isUnicode)
   else
     charbuff = s.char_str();
   size_t len = charbuff.length();
-  if (isUnicode)
-    len++;  // for 1-byte utf-8 mark
+  if (isUnicode || isNewFormat)
+    len++;  // for 1-byte new format mark
 
   // copy to buffer
   wxArrayLong buff;
   buff.SetCount(len / sizeof(key_t) + 1);
   char* p = (char*)&buff[0];
-  if (isUnicode)
+  if (isUnicode || isNewFormat)
   {
     memcpy(p + 1, charbuff, len - 1);
-    // utf-8 mark
-    *p = 0x00;
+    // format mark
+    char format = 0;
+    if (isUnicode)
+      format |= CF_UNICODE;
+    if (isNewFormat)
+      format |= CF_NEWFORMAT;
+    *p = format;
   }
   else
     memcpy(p, charbuff, len);
