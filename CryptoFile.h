@@ -2,40 +2,29 @@
 #define CRYPTOFILE_H
 
 #include <wx/string.h>
-#include <wx/hashmap.h>
+#include <deque>
 
 const static char CF_UNICODE    = 0x01;
 const static char CF_NEWFORMAT  = 0x02;
 
-class CRecord
+/*
+WX_DECLARE_LIST(CRecord, CContent);
+
+#include <wx/listimpl.cpp>
+WX_DEFINE_LIST(CContent);
+
+static int wxCMPFUNC_CONV ContentSort(const void* first, const void* second)
 {
-public:
-  wxString login;
-  wxString email;
-  wxString password;
+  CContent::iterator *it1=(CContent::iterator *)first;
+  CContent::iterator *it2=(CContent::iterator *)second;
 
-  CRecord& operator=(const CRecord& right)
-  {
-    if (&right == this)
-      return *this;
-    login = right.login;
-    email = right.email;
-    password = right.password;
-    return *this;
-  }
+  CRecord *item1=**it1;
+  CRecord *item2=**it2;
 
-  friend bool operator==(const CRecord& left, const CRecord& right)
-  {
-    return (left.login == right.login) && (left.email == right.email) && (left.password == right.password);
-  };
+  return item1->name.CmpNoCase(item2->name);
+}*/
 
-  friend bool operator!=(const CRecord& left, const CRecord& right)
-  {
-    return !(left == right);
-  };
-};
-
-WX_DECLARE_STRING_HASH_MAP(CRecord, CContent);
+typedef std::deque<CRecord> CContent;
 
 class CCryptoFile
 {
@@ -49,10 +38,13 @@ public:
 
   CCryptoFile();
   CCryptoFile(const wxString& path);
+  ~CCryptoFile();
+
   void MergeWith(const CCryptoFile& second);
   bool ReadFile();
   bool WriteFile(const bool isUnicode, const bool isNewFormat);
 
+ // void SortContent() { content->Sort(ContentSort); }
   const wxString& GetFileName() { return fname; }
   const wxString& GetFilePath() { return fpath; }
 

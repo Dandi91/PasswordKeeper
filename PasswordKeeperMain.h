@@ -37,8 +37,8 @@ class PasswordKeeperFrame: public wxFrame
         wxWindow* GetTabPage();
 
         void UpdateInterface();
-        CCryptoFile& CurrentFile();
-        wxString CurrentLine();
+        CCryptoFile* CurrentFile();
+        const int CurrentLine();
 
         //(*Handlers(PasswordKeeperFrame)
         void OnQuit(wxCommandEvent& event);

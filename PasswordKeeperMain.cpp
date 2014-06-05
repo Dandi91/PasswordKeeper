@@ -85,14 +85,14 @@ WX_DEFINE_OBJARRAY(CFilesArray);
 
 CFilesArray fileList;
 
-CCryptoFile& PasswordKeeperFrame::CurrentFile()
+CCryptoFile* PasswordKeeperFrame::CurrentFile()
 {
-  return fileList[tbTabs->GetSelection()];
+  return &fileList[tbTabs->GetSelection()];
 }
 
-wxString PasswordKeeperFrame::CurrentLine()
+const int PasswordKeeperFrame::CurrentLine()
 {
-  return lbList->GetString(lbList->GetSelection());
+  return lbList->GetSelection();
 }
 
 PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
@@ -221,11 +221,6 @@ void PasswordKeeperFrame::OnQuit(wxCommandEvent& event)
   Close();
 }
 
-static int CompareStringNoCase(const wxString& first, const wxString& second)
-{
-  return first.CmpNoCase(second);
-}
-
 void PasswordKeeperFrame::UpdateInterface()
 {
   int tabsSelection = tbTabs->GetSelection();
@@ -234,15 +229,19 @@ void PasswordKeeperFrame::UpdateInterface()
     if (tabsSelection > -1)
     {
       // Save selection before cleaning
-      int listSelection = lbList->GetSelection();
+      int listSelection = CurrentLine();
       // Reread values from file
-      CCryptoFile* f = &fileList[tabsSelection];
-      CContent* curr = &f->content;
+      CCryptoFile* f = CurrentFile();
+     // f->SortContent();
+      CContent* curr = f->content;
       CContent::iterator i;
       wxArrayString items;
+      volatile int a = curr->GetCount();
       for (i = curr->begin(); i != curr->end(); ++i)
-        items.Add(i->first);
-      items.Sort(CompareStringNoCase);
+      {
+        CRecord* rec = *i;
+        items.Add(rec->name);
+      }
       // Gather strings from list
       wxArrayString olds;
       for (size_t i = 0; i < lbList->GetCount(); ++i)
@@ -267,7 +266,7 @@ void PasswordKeeperFrame::UpdateInterface()
   bool flag = tabsSelection > -1;
   miClose->Enable(flag);
   miCloseAll->Enable(flag);
-  miSave->Enable(flag && !CurrentFile().isSaved);
+  miSave->Enable(flag && !CurrentFile()->isSaved);
   miSaveAs->Enable(flag);
   miAdd->Enable(flag);
   miMerge->Enable(flag);
@@ -307,7 +306,8 @@ void PasswordKeeperFrame::OnListDblClick(wxCommandEvent& event)
 {
   if (wxTheClipboard->Open())
   {
-    wxTheClipboard->SetData(new wxTextDataObject(CurrentFile().content[CurrentLine()].password));
+    CRecord* rec = CurrentFile()->content->Item(CurrentLine())->GetData();
+    wxTheClipboard->SetData(new wxTextDataObject(rec->password));
     wxTheClipboard->Close();
     wxMessageBox("Password has been copied to the clipboard", "Information", wxOK | wxICON_INFORMATION);
   }
@@ -356,11 +356,11 @@ void PasswordKeeperFrame::OnmiOpenSelected(wxCommandEvent& event)
 
 void PasswordKeeperFrame::OnmiSaveSelected(wxCommandEvent& event)
 {
-  if (CurrentFile().GetFileName().Cmp('?') == 0)
+  if (CurrentFile()->GetFileName().Cmp('?') == 0)
     OnmiSaveAsSelected(event);
   else
   {
-    CurrentFile().WriteFile(true, true);
+    CurrentFile()->WriteFile(true, true);
     UpdateInterface();
   }
 }
@@ -371,17 +371,17 @@ void PasswordKeeperFrame::OnmiSaveAsSelected(wxCommandEvent& event)
                         wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
   if (saveDlg.ShowModal() == wxID_OK)
   {
-    CurrentFile().SetFilePath(saveDlg.GetPath());
-    CurrentFile().WriteFile(true, true);
+    CurrentFile()->SetFilePath(saveDlg.GetPath());
+    CurrentFile()->WriteFile(true, true);
     UpdateInterface();
   }
 }
 
 void PasswordKeeperFrame::OnmiCloseSelected(wxCommandEvent& event)
 {
-  if (!CurrentFile().isSaved)
+  if (!CurrentFile()->isSaved)
   {
-    int res = wxMessageBox(wxString::Format("File \"%s\" has been changed. Do you want to save it?", CurrentFile().GetFilePath()),
+    int res = wxMessageBox(wxString::Format("File \"%s\" has been changed. Do you want to save it?", CurrentFile()->GetFilePath()),
                            "Information", wxYES_NO | wxCANCEL | wxICON_EXCLAMATION);
     if (res == wxYES)
       OnmiSaveSelected(event);
@@ -404,43 +404,31 @@ void PasswordKeeperFrame::OnmiCloseAllSelected(wxCommandEvent& event)
 void PasswordKeeperFrame::OnmiViewSelected(wxCommandEvent& event)
 {
   PropDialog dlg(this);
-  wxString name = CurrentLine();
-  CRecord record = CurrentFile().content[name];
-  dlg.ShowModalEx(name, record, smVIEW);
+  CRecord* record = CurrentFile()->content->Item(CurrentLine())->GetData();
+  dlg.ShowModalEx(*record, smVIEW);
 }
 
 void PasswordKeeperFrame::OnmiAddSelected(wxCommandEvent& event)
 {
-  PropDialog* dlg = new PropDialog(this);
-  wxString name;
-  CRecord record;
-  while (dlg->ShowModalEx(name, record, smADD) == wxID_OK)
-  {
-    delete dlg;
-    dlg = new PropDialog(this);
-    CContent* content = &CurrentFile().content;
-    if (content->find(name) != content->end())
-      wxMessageBox("This name is already used", "Error", wxOK | wxICON_ERROR);
-    else
-    {
-      CurrentFile().content[name] = record;
-      CurrentFile().isSaved = false;
-      UpdateInterface();
-      return;
-    }
-  }
+  PropDialog dlg(this);
+  CRecord* record = new CRecord;
+  dlg.ShowModalEx(*record, smADD);
+  CurrentFile()->content->Append(record);
+  CurrentFile()->isSaved = false;
+  UpdateInterface();
 }
 
 void PasswordKeeperFrame::OnmiEditSelected(wxCommandEvent& event)
 {
   PropDialog dlg(this);
-  wxString name = CurrentLine();
-  CRecord record = CurrentFile().content[name];
-  if (dlg.ShowModalEx(name, record, smEDIT) == wxID_OK)
+  CRecord* oldRecord = CurrentFile()->content->Item(CurrentLine())->GetData();
+  CRecord* newRecord = new CRecord;
+  *newRecord = *oldRecord;
+  if (dlg.ShowModalEx(*newRecord, smEDIT) == wxID_OK)
   {
-    CurrentFile().content.erase(CurrentLine());
-    CurrentFile().content[name] = record;
-    CurrentFile().isSaved = false;
+    CurrentFile()->content->DeleteObject(oldRecord);
+    CurrentFile()->content->Append(newRecord);
+    CurrentFile()->isSaved = false;
     UpdateInterface();
   }
 }
@@ -449,8 +437,8 @@ void PasswordKeeperFrame::OnmiDeleteSelected(wxCommandEvent& event)
 {
   if (wxMessageBox("Are you sure to delete this record?", "Confirmation", wxYES_NO | wxICON_EXCLAMATION) == wxYES)
   {
-    CurrentFile().content.erase(CurrentLine());
-    CurrentFile().isSaved = false;
+    CurrentFile()->content->DeleteNode(CurrentFile()->content->Item(CurrentLine()));
+    CurrentFile()->isSaved = false;
     UpdateInterface();
   }
 }
@@ -462,7 +450,7 @@ void PasswordKeeperFrame::OnmiMergeSelected(wxCommandEvent& event)
   if (openDlg.ShowModal() == wxID_OK)
   {
     CCryptoFile mergeFile(openDlg.GetPath());
-    CurrentFile().MergeWith(mergeFile);
+    CurrentFile()->MergeWith(mergeFile);
     UpdateInterface();
   }
 }
@@ -473,7 +461,8 @@ void PasswordKeeperFrame::OnClose(wxCloseEvent& event)
   saver.SaveWindow(*this, "MainWindow");
   wxArrayString mru;
   for (size_t i = 0; i < fileList.Count(); ++i)
-    mru.Add(fileList[i].GetFilePath());
+    if (fileList[i].GetFilePath().Cmp('?'))
+      mru.Add(fileList[i].GetFilePath());
   saver.SaveMRU(mru, tbTabs->GetSelection());
   wxCommandEvent cmdEvent;
   OnmiCloseAllSelected(cmdEvent);

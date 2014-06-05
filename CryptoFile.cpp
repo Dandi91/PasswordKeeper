@@ -14,6 +14,8 @@ CCryptoFile::CCryptoFile()
 
 CCryptoFile::CCryptoFile(const wxString& path)
 {
+  content = new CContent;
+//  content->DeleteContents(true);
   fpath = path;
   fname = fpath.AfterLast('\\').BeforeLast('.');
   if (!path.Cmp('?'))
@@ -25,6 +27,11 @@ CCryptoFile::CCryptoFile(const wxString& path)
     isSaved = ReadFile();
 }
 
+CCryptoFile::~CCryptoFile()
+{
+  delete content;
+}
+
 void CCryptoFile::SetFilePath(const wxString& path)
 {
   fpath = path;
@@ -33,27 +40,15 @@ void CCryptoFile::SetFilePath(const wxString& path)
 
 void CCryptoFile::MergeWith(const CCryptoFile& second)
 {
-  const CContent* content2 = &second.content;
+  const CContent* content2 = second.content;
   CContent::const_iterator i;
   for (i = content2->begin(); i != content2->end(); ++i)
   {
-    wxString content2_key = i->first;
-    CContent::iterator found = content.find(content2_key);
-    if (found != content.end())
-    {
-      // If key is already in content
-      if (found->second != i->second)
-      {
-        // If records are different, add new to content
-        content2_key += "_2";
-        content[content2_key] = i->second;
-        isSaved = false;
-      }
-    }
-    else
+    CContent::compatibility_iterator found = content->Find(*i);
+    if (found == NULL)
     {
       // If key is new, write it as is
-      content[content2_key] = i->second;
+      content->Append(*i);
       isSaved = false;
     }
   }
@@ -111,21 +106,21 @@ bool CCryptoFile::ReadFile()
     long res = s.Find("\r\n");
     wxString entry = s.SubString(0, res - 1);
     wxString value;
-    wxString name = entry.BeforeFirst('=', &value);
+    CRecord* rec = new CRecord;
+    rec->name = entry.BeforeFirst('=', &value);
     if (isNewFormat)
     {
-      CRecord rec;
-      rec.login = value.BeforeFirst('=', &entry);
-      rec.email = entry.BeforeFirst('=', &rec.password);
-      content[name] = rec;
+      rec->login = value.BeforeFirst('=', &entry);
+      rec->email = entry.BeforeFirst('=', &rec->password);
     }
     else
-      content[name].password = value;
+      rec->password = value;
+    if ((rec->name == "") || (rec->name == "[Main]"))
+      delete rec;
+    else
+      content->Append(rec);
     s.Remove(0, res + 2);
   }
-  content.erase("");
-  content.erase("[Main]");
-
   return true;
 }
 
@@ -136,17 +131,20 @@ key_t GenerateKey()
 
 bool CCryptoFile::WriteFile(const bool isUnicode, const bool isNewFormat)
 {
+  // sorting
+  SortContent();
+
   // parse to string
   wxString s;
-  CContent::iterator it;
-  for (it = content.begin(); it != content.end(); ++it)
+  CContent::iterator i;
+  for (i = content->begin(); i != content->end(); ++i)
   {
-    CRecord* rec = &it->second;
+    CRecord* rec = *i;
     if (isNewFormat)
-      s += it->first + "=" + rec->login + "=" +
+      s += rec->name + "=" + rec->login + "=" +
           rec->email + "=" + rec->password + "\r\n";
     else
-      s += it->first + "=" + rec->password + "\r\n";
+      s += rec->name + "=" + rec->password + "\r\n";
   }
   s.Prepend("[Main]\r\n");
   s.Append("\r\n");

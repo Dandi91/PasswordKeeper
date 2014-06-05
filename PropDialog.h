@@ -5,6 +5,8 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
+#include <wx/gbsizer.h>
+#include <wx/button.h>
 #include <wx/dialog.h>
 //*)
 
@@ -25,38 +27,32 @@ class PropDialog: public wxDialog
 		PropDialog(wxWindow* parent,wxWindowID id=wxID_ANY);
 		virtual ~PropDialog();
 
-		const int ShowModalEx(wxString& name, CRecord& rec, const ShowMode mode);
+		const int ShowModalEx(CRecord& rec, const ShowMode mode);
 
 		//(*Declarations(PropDialog)
 		wxTextCtrl* edName;
-		wxStaticText* StaticText2;
 		wxTextCtrl* edEmail;
-		wxBoxSizer* BoxSizer;
-		wxStaticText* StaticText1;
-		wxStaticText* StaticText3;
+		wxGridBagSizer* FormSizer;
 		wxTextCtrl* edPass;
 		wxStdDialogButtonSizer* dbSizer;
 		wxTextCtrl* edLogin;
-		wxStaticText* StaticText4;
+		wxButton* btGenerate;
 		//*)
 
 	protected:
 
 		//(*Identifiers(PropDialog)
-		static const long ID_STATICTEXT2;
 		static const long ID_EDNAME;
-		static const long ID_STATICTEXT3;
 		static const long ID_EDLOGIN;
-		static const long ID_STATICTEXT4;
 		static const long ID_EDEMAIL;
-		static const long ID_STATICTEXT1;
 		static const long ID_EDPASS;
+		static const long ID_BTPASS;
 		//*)
 
 	private:
-
-		//(*Handlers(PropDialog)
-		//*)
+		void OnModalClose(wxCommandEvent& event);
+    bool CheckParams();
+    void AddButtonToSizer(const wxWindowID id, const bool isAffirmative);
 
 		DECLARE_EVENT_TABLE()
 };
