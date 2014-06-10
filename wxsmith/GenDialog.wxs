@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<wxsmith>
+	<object class="wxDialog" name="GenDialog">
+		<size>400,154</size>
+		<object class="wxBoxSizer" variable="BoxSizer1" member="no" />
+	</object>
+</wxsmith>

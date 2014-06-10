@@ -199,7 +199,7 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     saver.LoadMRU(mru, active);
     for (size_t i = 0; i < mru.Count(); ++i)
     {
-      fileList.Add(CCryptoFile(mru[i]));
+      fileList.Add(new CCryptoFile(mru[i]));
       tbTabs->AddPage(GetTabPage(), fileList[fileList.Count() - 1].GetFileName(), true);
     }
     if ((active < (int)tbTabs->GetPageCount()) && (active != -1))
@@ -232,16 +232,10 @@ void PasswordKeeperFrame::UpdateInterface()
       int listSelection = CurrentLine();
       // Reread values from file
       CCryptoFile* f = CurrentFile();
-     // f->SortContent();
-      CContent* curr = f->content;
-      CContent::iterator i;
+      f->content.Sort();
       wxArrayString items;
-      volatile int a = curr->GetCount();
-      for (i = curr->begin(); i != curr->end(); ++i)
-      {
-        CRecord* rec = *i;
-        items.Add(rec->name);
-      }
+      for (size_t i = 0; i < f->content.GetCount(); ++i)
+        items.Add(f->content.GetItem(i).name);
       // Gather strings from list
       wxArrayString olds;
       for (size_t i = 0; i < lbList->GetCount(); ++i)
@@ -306,8 +300,7 @@ void PasswordKeeperFrame::OnListDblClick(wxCommandEvent& event)
 {
   if (wxTheClipboard->Open())
   {
-    CRecord* rec = CurrentFile()->content->Item(CurrentLine())->GetData();
-    wxTheClipboard->SetData(new wxTextDataObject(rec->password));
+    wxTheClipboard->SetData(new wxTextDataObject(CurrentFile()->content[CurrentLine()].password));
     wxTheClipboard->Close();
     wxMessageBox("Password has been copied to the clipboard", "Information", wxOK | wxICON_INFORMATION);
   }
@@ -328,7 +321,7 @@ void PasswordKeeperFrame::OnAbout(wxCommandEvent& event)
 
 void PasswordKeeperFrame::OnmiNewSelected(wxCommandEvent& event)
 {
-  fileList.Add(CCryptoFile("?"));
+  fileList.Add(new CCryptoFile("?"));
   tbTabs->AddPage(GetTabPage(), "?", true);
   UpdateInterface();
 }
@@ -348,7 +341,7 @@ void PasswordKeeperFrame::OnmiOpenSelected(wxCommandEvent& event)
     openDlg.GetPaths(files);
     for (size_t i = 0; i < files.Count(); ++i)
     {
-      fileList.Add(CCryptoFile(files[i]));
+      fileList.Add(new CCryptoFile(files[i]));
       tbTabs->AddPage(GetTabPage(), fileList[fileList.Count() - 1].GetFileName(), true);
     }
   }
@@ -404,16 +397,15 @@ void PasswordKeeperFrame::OnmiCloseAllSelected(wxCommandEvent& event)
 void PasswordKeeperFrame::OnmiViewSelected(wxCommandEvent& event)
 {
   PropDialog dlg(this);
-  CRecord* record = CurrentFile()->content->Item(CurrentLine())->GetData();
-  dlg.ShowModalEx(*record, smVIEW);
+  dlg.ShowModalEx(CurrentFile()->content[CurrentLine()], smVIEW);
 }
 
 void PasswordKeeperFrame::OnmiAddSelected(wxCommandEvent& event)
 {
   PropDialog dlg(this);
-  CRecord* record = new CRecord;
-  dlg.ShowModalEx(*record, smADD);
-  CurrentFile()->content->Append(record);
+  CRecord record;
+  dlg.ShowModalEx(record, smADD);
+  CurrentFile()->content.Add(record);
   CurrentFile()->isSaved = false;
   UpdateInterface();
 }
@@ -421,13 +413,8 @@ void PasswordKeeperFrame::OnmiAddSelected(wxCommandEvent& event)
 void PasswordKeeperFrame::OnmiEditSelected(wxCommandEvent& event)
 {
   PropDialog dlg(this);
-  CRecord* oldRecord = CurrentFile()->content->Item(CurrentLine())->GetData();
-  CRecord* newRecord = new CRecord;
-  *newRecord = *oldRecord;
-  if (dlg.ShowModalEx(*newRecord, smEDIT) == wxID_OK)
+  if (dlg.ShowModalEx(CurrentFile()->content[CurrentLine()], smEDIT) == wxID_OK)
   {
-    CurrentFile()->content->DeleteObject(oldRecord);
-    CurrentFile()->content->Append(newRecord);
     CurrentFile()->isSaved = false;
     UpdateInterface();
   }
@@ -437,7 +424,7 @@ void PasswordKeeperFrame::OnmiDeleteSelected(wxCommandEvent& event)
 {
   if (wxMessageBox("Are you sure to delete this record?", "Confirmation", wxYES_NO | wxICON_EXCLAMATION) == wxYES)
   {
-    CurrentFile()->content->DeleteNode(CurrentFile()->content->Item(CurrentLine()));
+    CurrentFile()->content.Delete(CurrentLine());
     CurrentFile()->isSaved = false;
     UpdateInterface();
   }

@@ -14,22 +14,15 @@ CCryptoFile::CCryptoFile()
 
 CCryptoFile::CCryptoFile(const wxString& path)
 {
-  content = new CContent;
-//  content->DeleteContents(true);
   fpath = path;
   fname = fpath.AfterLast('\\').BeforeLast('.');
-  if (!path.Cmp('?'))
+  if (path == "?")
   {
     isSaved = true;
     fname = '?';
   }
   else
     isSaved = ReadFile();
-}
-
-CCryptoFile::~CCryptoFile()
-{
-  delete content;
 }
 
 void CCryptoFile::SetFilePath(const wxString& path)
@@ -40,15 +33,12 @@ void CCryptoFile::SetFilePath(const wxString& path)
 
 void CCryptoFile::MergeWith(const CCryptoFile& second)
 {
-  const CContent* content2 = second.content;
-  CContent::const_iterator i;
-  for (i = content2->begin(); i != content2->end(); ++i)
+  for (size_t i = 0; i < second.content.GetCount(); ++i)
   {
-    CContent::compatibility_iterator found = content->Find(*i);
-    if (found == NULL)
+    if (content.Find(second.content[i]) == -1)
     {
       // If key is new, write it as is
-      content->Append(*i);
+      content.Add(second.content[i]);
       isSaved = false;
     }
   }
@@ -106,19 +96,17 @@ bool CCryptoFile::ReadFile()
     long res = s.Find("\r\n");
     wxString entry = s.SubString(0, res - 1);
     wxString value;
-    CRecord* rec = new CRecord;
-    rec->name = entry.BeforeFirst('=', &value);
+    CRecord rec;
+    rec.name = entry.BeforeFirst('=', &value);
     if (isNewFormat)
     {
-      rec->login = value.BeforeFirst('=', &entry);
-      rec->email = entry.BeforeFirst('=', &rec->password);
+      rec.login = value.BeforeFirst('=', &entry);
+      rec.email = entry.BeforeFirst('=', &rec.password);
     }
     else
-      rec->password = value;
-    if ((rec->name == "") || (rec->name == "[Main]"))
-      delete rec;
-    else
-      content->Append(rec);
+      rec.password = value;
+    if ((rec.name != "") && (rec.name != "[Main]"))
+      content.Add(rec);
     s.Remove(0, res + 2);
   }
   return true;
@@ -132,14 +120,13 @@ key_t GenerateKey()
 bool CCryptoFile::WriteFile(const bool isUnicode, const bool isNewFormat)
 {
   // sorting
-  SortContent();
+  content.Sort();
 
   // parse to string
   wxString s;
-  CContent::iterator i;
-  for (i = content->begin(); i != content->end(); ++i)
+  for (size_t i = 0; i < content.GetCount(); ++i)
   {
-    CRecord* rec = *i;
+    CRecord* rec = &content[i];
     if (isNewFormat)
       s += rec->name + "=" + rec->login + "=" +
           rec->email + "=" + rec->password + "\r\n";

@@ -88,6 +88,7 @@ const int PropDialog::ShowModalEx(CRecord& rec, const ShowMode mode)
   if (mode == smVIEW)
   {
     this->SetTitle("View Record");
+    btGenerate->Show(false);
     edName->SetEditable(false);
     edLogin->SetEditable(false);
     edEmail->SetEditable(false);
@@ -110,10 +111,13 @@ const int PropDialog::ShowModalEx(CRecord& rec, const ShowMode mode)
   dbSizer->Realize();
   FormSizer->Fit(this);
   int res = ShowModal();
-  rec.name = edName->GetValue();
-  rec.login = edLogin->GetValue();
-  rec.email = edEmail->GetValue();
-  rec.password = edPass->GetValue();
+  if (((mode == smADD) || (mode == smEDIT)) && (res == wxID_OK))
+  {
+    rec.name = edName->GetValue();
+    rec.login = edLogin->GetValue();
+    rec.email = edEmail->GetValue();
+    rec.password = edPass->GetValue();
+  }
   return res;
 }
 
