@@ -8,6 +8,39 @@ CRegistrySaver::CRegistrySaver(const wxString& path)
   key->Open();
 }
 
+CRegistrySaver::~CRegistrySaver()
+{
+  key->Close();
+  delete key;
+}
+
+long CRegistrySaver::LoadLong(const wxString& name, const long def = 0)
+{
+  long result;
+  if (key->HasValue(name))
+    if (key->QueryValue(name, &result))
+      return result;
+  return def;
+}
+
+bool CRegistrySaver::LoadBool(const wxString& name, const bool def = false)
+{
+  long result;
+  if (key->HasValue(name))
+    if (key->QueryValue(name, &result))
+      return result;
+  return def;
+}
+
+wxString CRegistrySaver::LoadStringW(const wxString& name, const wxString& def = wxEmptyString)
+{
+  wxString result;
+  if (key->HasValue(name))
+    if (key->QueryValue(name, result))
+      return result;
+  return def;
+}
+
 void CRegistrySaver::LoadWindow(wxTopLevelWindow& window, const wxString& name)
 {
   long top, left, width, height, maximized = 0;
@@ -46,6 +79,21 @@ void CRegistrySaver::LoadMRU(wxArrayString& mru, int& active)
       mru.Add(value);
     }
   }
+}
+
+void CRegistrySaver::SaveLong(const long value, const wxString& name)
+{
+  key->SetValue(name, value);
+}
+
+void CRegistrySaver::SaveBool(const bool value, const wxString& name)
+{
+  key->SetValue(name, value);
+}
+
+void CRegistrySaver::SaveStringW(const wxString& value, const wxString& name)
+{
+  key->SetValue(name, value);
 }
 
 void CRegistrySaver::SaveWindow(wxTopLevelWindow& window, const wxString& name)

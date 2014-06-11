@@ -32,12 +32,12 @@ void CContent::Sort()
 {
   if (content.size() < 2)
     return;
-  for (size_t i = 0; i < content.size(); ++i)
+  for (size_t i = 0; i < content.size() - 1; ++i)
   {
-    size_t max = 0;
+    size_t max = i;
     for (size_t j = i + 1; j < content.size(); ++j)
     {
-      if (content[max]->name.Cmp(content[j]->name) > 0)
+      if (content[max]->name.CmpNoCase(content[j]->name) > 0)
         max = j;
     }
     Switch(i, max);
@@ -73,9 +73,12 @@ CRecord& CContent::GetItem(const size_t index) const
 
 void CContent::Switch(const size_t indexA, const size_t indexB)
 {
-  CRecord temp = *content[indexA];
-  *content[indexA] = *content[indexB];
-  *content[indexB] = temp;
+  if (indexA != indexB)
+  {
+    CRecord temp = *content[indexA];
+    *content[indexA] = *content[indexB];
+    *content[indexB] = temp;
+  }
 }
 
 const size_t CContent::GetCount() const

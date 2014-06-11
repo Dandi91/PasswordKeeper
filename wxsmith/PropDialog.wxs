@@ -88,6 +88,7 @@
 					<object class="sizeritem">
 						<object class="wxButton" name="ID_BTPASS" variable="btGenerate" member="yes">
 							<label>Generate password...</label>
+							<handler function="OnbtGenerateClick" entry="EVT_BUTTON" />
 						</object>
 						<flag>wxALL|wxSHAPED|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>

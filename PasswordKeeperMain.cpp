@@ -228,8 +228,9 @@ void PasswordKeeperFrame::UpdateInterface()
   {
     if (tabsSelection > -1)
     {
-      // Save selection before cleaning
+      // Save selection and scrolling position before cleaning
       int listSelection = CurrentLine();
+      int listFirstVisible = lbList->HitTest(1, 1);
       // Reread values from file
       CCryptoFile* f = CurrentFile();
       f->content.Sort();
@@ -252,9 +253,11 @@ void PasswordKeeperFrame::UpdateInterface()
       if (!f->isSaved)
         s += '*';
       tbTabs->SetPageText(tabsSelection, s);
-      // Restore selection
+      // Restore selection and scrolling position
       if (listSelection < (int)lbList->GetCount())
         lbList->SetSelection(listSelection);
+      if ((listFirstVisible < (int)lbList->GetCount()) && (listFirstVisible != wxNOT_FOUND))
+        lbList->SetFirstItem(listFirstVisible);
     }
   }
   bool flag = tabsSelection > -1;
@@ -404,10 +407,12 @@ void PasswordKeeperFrame::OnmiAddSelected(wxCommandEvent& event)
 {
   PropDialog dlg(this);
   CRecord record;
-  dlg.ShowModalEx(record, smADD);
-  CurrentFile()->content.Add(record);
-  CurrentFile()->isSaved = false;
-  UpdateInterface();
+  if (dlg.ShowModalEx(record, smADD) == wxID_OK)
+  {
+    CurrentFile()->content.Add(record);
+    CurrentFile()->isSaved = false;
+    UpdateInterface();
+  }
 }
 
 void PasswordKeeperFrame::OnmiEditSelected(wxCommandEvent& event)

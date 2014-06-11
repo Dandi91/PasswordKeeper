@@ -6,6 +6,7 @@
 //*)
 
 #include <wx/msgdlg.h>
+#include "GenDialog.h"
 
 //(*IdInit(PropDialog)
 const long PropDialog::ID_EDNAME = wxNewId();
@@ -62,6 +63,8 @@ PropDialog::PropDialog(wxWindow* parent,wxWindowID id)
 	SetSizer(FormSizer);
 	Layout();
 	Center();
+
+	Connect(ID_BTPASS,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&PropDialog::OnbtGenerateClick);
 	//*)
 }
 
@@ -145,4 +148,12 @@ void PropDialog::OnModalClose(wxCommandEvent& event)
 {
   if (CheckParams())
     event.Skip();
+}
+
+void PropDialog::OnbtGenerateClick(wxCommandEvent& event)
+{
+  GenDialog dlg(this);
+  wxString pass;
+  if (dlg.ShowModalEx(pass) == wxID_OK)
+    edPass->SetValue(pass);
 }

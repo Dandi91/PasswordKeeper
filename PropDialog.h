@@ -10,15 +10,14 @@
 #include <wx/dialog.h>
 //*)
 
-#include <wx/string.h>
 #include "CryptoFile.h"
 
-typedef enum
+enum ShowMode
 {
   smVIEW = 0,
   smADD,
   smEDIT
-} ShowMode;
+};
 
 class PropDialog: public wxDialog
 {
@@ -50,11 +49,16 @@ class PropDialog: public wxDialog
 		//*)
 
 	private:
+
+    //(*Handlers(PropDialog)
+    void OnbtGenerateClick(wxCommandEvent& event);
+    //*)
+
+		DECLARE_EVENT_TABLE()
+
 		void OnModalClose(wxCommandEvent& event);
     bool CheckParams();
     void AddButtonToSizer(const wxWindowID id, const bool isAffirmative);
-
-		DECLARE_EVENT_TABLE()
 };
 
 #endif
