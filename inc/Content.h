@@ -35,20 +35,21 @@ public:
   };
 };
 
-class CContent
+class CRecordList
 {
 private:
-  std::vector <CRecord*> content;
+  wxString fName;
+  std::vector <CRecord*> array;
 public:
   // Constructors
-  CContent();
-  CContent(const CContent& value);
+  CRecordList(const wxString& name);
+  CRecordList(const CRecordList& value);
 
   // Destructor
-  ~CContent();
+  ~CRecordList() { Clear(); };
 
   // Methods
-  void Assign(const CContent& value);
+  void Assign(const CRecordList& value);
   void Clear();
   void Sort();
 
@@ -56,15 +57,44 @@ public:
   size_t Add(const CRecord& value);
   void Delete(const size_t index);
   int Find(const CRecord& value) const;
-  CRecord& GetItem(const size_t index) const;
+  CRecord& GetItem(const size_t index) const { return *(array[index]); };
   void Switch(const size_t indexA, const size_t indexB);
 
   // Properties
-  const size_t GetCount() const;
+  const size_t GetCount() const { return array.size(); };
+  const wxString GetName() const { return fName; };
+  void SetName(const wxString& name) { fName = name; };
 
   // Operators
   CRecord& operator[](const size_t index) const { return GetItem(index); };
-  CContent& operator=(const CContent& right) { Assign(right); return *this; };
+  CRecordList& operator=(const CRecordList& right) { Assign(right); return *this; };
+};
+
+class CContent
+{
+private:
+  std::vector <CRecordList*> array;
+public:
+  // Constructors
+  CContent() {};
+
+  // Destructor
+  ~CContent() { Clear(); };
+
+  // Methods
+  void Clear();
+
+  // Elements' operations
+  size_t Add(CRecordList* value);
+  void Delete(const size_t index);
+  CRecordList& GetItem(const size_t index) const { return *(array[index]); };
+  void Move(const size_t index, const size_t to);
+
+  // Properties
+  const size_t GetCount() const { return array.size(); };
+
+  // Operators
+  CRecordList& operator[](const size_t index) const { return GetItem(index); };
 };
 
 #endif // CONTENT_H
