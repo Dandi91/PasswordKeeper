@@ -11,6 +11,8 @@
 #include <wx/msgdlg.h>
 #include <wx/filedlg.h>
 #include <wx/clipbrd.h>
+#include <wx/icon.h>
+#include <wx/iconbndl.h>
 
 //(*InternalHeaders(PasswordKeeperFrame)
 #include <wx/settings.h>
@@ -77,6 +79,8 @@ BEGIN_EVENT_TABLE(PasswordKeeperFrame,wxFrame)
     //(*EventTable(PasswordKeeperFrame)
     //*)
 END_EVENT_TABLE()
+
+wxString login, password;
 
 WX_DECLARE_OBJARRAY(CCryptoFile, CFilesArray);
 
@@ -204,6 +208,11 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     }
     if ((active < (int)tbTabs->GetPageCount()) && (active != -1))
       tbTabs->SetSelection(active);
+
+    wxIconBundle bundle;
+    bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 16, 16));
+    bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 32, 32));
+    SetIcons(bundle);
 
     UpdateInterface();
 }

@@ -187,7 +187,7 @@ enum CharType {
 
 void GenDialog::PasswordVisibility()
 {
-  if (cbShow->Get3StateValue() == wxCHK_CHECKED)
+  if (cbShow->GetValue())
     SendMessage((HWND)edPassword->GetHandle(), EM_SETPASSWORDCHAR, 0, 0);
   else
   {
@@ -229,7 +229,7 @@ void GenDialog::GeneratePassword()
   for (int i = 0; i < length; ++i)
   {
     CharType charType = types[Random(types.size())];
-    char newChar;
+    char newChar = 'a';
     switch (charType)
     {
       case ctUpper:
