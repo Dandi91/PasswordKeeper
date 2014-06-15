@@ -93,6 +93,7 @@ GenDialog::GenDialog(wxWindow* parent,wxWindowID id)
 	SetSizer(FormSizer);
 	SetSizer(FormSizer);
 	Layout();
+	Center();
 
 	Connect(ID_TEXTCTRL1,wxEVT_COMMAND_TEXT_ENTER,(wxObjectEventFunction)&GenDialog::OnedPasswordTextEnter);
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&GenDialog::OncbShowClick);

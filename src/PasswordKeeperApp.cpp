@@ -14,35 +14,40 @@
 #include <wx/image.h>
 //*)
 
-#include "AuthDlg.h"
-#include "CryptoFile.h"
+#include "AuthDialog.h"
+#include "Account.h"
 #include <wx/msgdlg.h>
 
 IMPLEMENT_APP(PasswordKeeperApp);
 
 bool PasswordKeeperApp::OnInit()
 {
-  AuthDlg dlg(NULL);
-  int res = dlg.ShowModal();
-  while ((res == wxID_OK) || (res == ID_CREATENEW))
+  AuthDialog dlg(NULL);
+  int res;
+  do
   {
-    CCryptoFile::Get().OpenFile(dlg.edLogin->GetValue(), dlg.edPassword->GetValue(), res == ID_CREATENEW);
-    if (CCryptoFile::Get().isOk())
-    {
-      //(*AppInitialize
-      bool wxsOK = true;
-      wxInitAllImageHandlers();
-      if ( wxsOK )
-      {
-        PasswordKeeperFrame* Frame = new PasswordKeeperFrame(0);
-        Frame->Show();
-        SetTopWindow(Frame);
-      }
-      //*)
-      return wxsOK;
-    }
-    wxMessageBox(CCryptoFile::Get().GetErrorMessage(), "Error");
     res = dlg.ShowModal();
+    if ((res == wxID_OK) || (res == wxID_NEW))
+    {
+      CAccount::Get().Authorize(dlg.edLogin->GetValue(), dlg.edPassword->GetValue(), res == wxID_NEW);
+      if (CAccount::Get().IsOk())
+      {
+        //(*AppInitialize
+        bool wxsOK = true;
+        wxInitAllImageHandlers();
+        if ( wxsOK )
+        {
+          PasswordKeeperFrame* Frame = new PasswordKeeperFrame(0);
+          Frame->Show();
+          SetTopWindow(Frame);
+        }
+        //*)
+        return wxsOK;
+      }
+      else
+        wxMessageBox(CAccount::Get().GetErrorMessage(), "Error", wxOK | wxICON_ERROR);
+    }
   }
+  while ((res == wxID_OK) || (res == wxID_NEW));
   return false;
 }

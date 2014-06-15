@@ -9,23 +9,19 @@
 #define AES256_KEY_SIZE 32
 #define AES256_IV_SIZE  16
 
-namespace CryptoPP
+void CCryptoWrap::SHA256Digest(const wxString& plane, wxMemoryBuffer& digest)
 {
-
-void SHA256Digest(const wxString& plane, wxMemoryBuffer& digest)
-{
-  digest.SetBufSize(SHA256::DIGESTSIZE);
-  SHA256().CalculateDigest((byte *)digest.GetData(), plane.c_str(), plane.Len());
+  CryptoPP::SHA256().CalculateDigest((byte *)digest.GetAppendBuf(CryptoPP::SHA256::DIGESTSIZE), plane.c_str(), plane.Len());
 }
 
-void AES256CTREncrypt(wxMemoryBuffer& dest, const wxMemoryBuffer& source, const size_t length, const wxMemoryBuffer& key, const wxMemoryBuffer& iv)
+void CCryptoWrap::AES256CTREncrypt(wxMemoryBuffer& dest, const wxMemoryBuffer& source, const size_t length, const wxMemoryBuffer& key, const wxMemoryBuffer& iv)
 {
-  CTR_Mode<AES>::Encryption enc;
+  CryptoPP::CTR_Mode<CryptoPP::AES>::Encryption enc;
   enc.SetKeyWithIV((byte *)key.GetData(), AES256_KEY_SIZE, (byte *)iv.GetData());
-  ArraySource((byte *)source.GetData(), length, true, new StreamTransformationFilter(enc, new ArraySink((byte *)dest.GetData(), length)));
+  CryptoPP::ArraySource((byte *)source.GetData(), length, true, new CryptoPP::StreamTransformationFilter(enc, new CryptoPP::ArraySink((byte *)dest.GetAppendBuf(length), length)));
 }
 
-void XORDigestIV(wxMemoryBuffer& buffer)
+void CCryptoWrap::XORDigestIV(wxMemoryBuffer& buffer)
 {
   char* dest = (char*)buffer.GetData();
   char* source = dest + AES256_IV_SIZE;
@@ -34,9 +30,7 @@ void XORDigestIV(wxMemoryBuffer& buffer)
   buffer.SetDataLen(AES256_IV_SIZE);
 }
 
-void CRC32Sum(const wxMemoryBuffer& buffer, size_t length, uint32_t* lvalue)
+void CCryptoWrap::CRC32Sum(const wxMemoryBuffer& buffer, uint32_t* lvalue)
 {
-  CRC32().CalculateDigest((byte *)lvalue, (byte *)buffer.GetData(), length);
-}
-
+  CryptoPP::CRC32().CalculateDigest((byte *)lvalue, (byte *)buffer.GetData(), buffer.GetDataLen());
 }

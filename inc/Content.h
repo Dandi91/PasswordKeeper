@@ -42,7 +42,8 @@ private:
   std::vector <CRecord*> array;
 public:
   // Constructors
-  CRecordList(const wxString& name);
+  CRecordList(const wxString& name)
+              : fName(name) {};
   CRecordList(const CRecordList& value);
 
   // Destructor
@@ -83,18 +84,19 @@ public:
 
   // Methods
   void Clear();
+  void Sort();
 
   // Elements' operations
   size_t Add(CRecordList* value);
   void Delete(const size_t index);
-  CRecordList& GetItem(const size_t index) const { return *(array[index]); };
+  CRecordList* GetItem(const size_t index) const { return array[index]; };
   void Move(const size_t index, const size_t to);
 
   // Properties
   const size_t GetCount() const { return array.size(); };
 
   // Operators
-  CRecordList& operator[](const size_t index) const { return GetItem(index); };
+  CRecordList* operator[](const size_t index) const { return GetItem(index); };
 };
 
 #endif // CONTENT_H

@@ -18,7 +18,7 @@
 #include <wx/statusbr.h>
 //*)
 
-#include "CryptoFile.h"
+#include "Account.h"
 #include <wx/listbox.h>
 #include <wx/panel.h>
 
@@ -30,82 +30,127 @@ class PasswordKeeperFrame: public wxFrame
         virtual ~PasswordKeeperFrame();
 
     private:
+        CAccount* account;
+
+        bool isDragging;
+        wxPoint dragStartPos;
+        int draggedTab;
+
+        int lastLineClicked;
 
         wxPanel* pnPanel;
         wxBoxSizer* BoxSizer;
         wxListBox* lbList;
         wxWindow* GetTabPage();
 
+        void Deauthorization();
         void UpdateInterface();
-        CCryptoFile* CurrentFile();
-        const int CurrentLine();
+        void UpdateMenus();
+        void ConstructMoveMenu(wxMenu* menu, const bool enable);
+        void UpdateTabs();
+        CRecordList* CurrentList();
+        const int CurrentLine(int* selCount);
 
         //(*Handlers(PasswordKeeperFrame)
-        void OnQuit(wxCommandEvent& event);
-        void OnAbout(wxCommandEvent& event);
-        void OnmiNewSelected(wxCommandEvent& event);
-        void OntbTabsPageChanged(wxNotebookEvent& event);
-        void OnmiOpenSelected(wxCommandEvent& event);
+        void OnmiChangeSelected(wxCommandEvent& event);
+        void OnmiSyncSelected(wxCommandEvent& event);
         void OnmiSaveSelected(wxCommandEvent& event);
-        void OnmiSaveAsSelected(wxCommandEvent& event);
-        void OnmiCloseSelected(wxCommandEvent& event);
-        void OnmiCloseAllSelected(wxCommandEvent& event);
+        void OnmiQuitSelected(wxCommandEvent& event);
+        void OnmiAddTabSelected(wxCommandEvent& event);
+        void OnmiRenameTabSelected(wxCommandEvent& event);
+        void OnmiDeleteTabSelected(wxCommandEvent& event);
+        void OntbTabsPageChanged(wxNotebookEvent& event);
+        void OnmiAboutSelected(wxCommandEvent& event);
         void OnmiViewSelected(wxCommandEvent& event);
         void OnmiAddSelected(wxCommandEvent& event);
         void OnmiEditSelected(wxCommandEvent& event);
         void OnmiDeleteSelected(wxCommandEvent& event);
-        void OnmiMergeSelected(wxCommandEvent& event);
         void OnClose(wxCloseEvent& event);
+        void OnmiCopyNameSelected(wxCommandEvent& event);
+        void OnmiCopyLoginSelected(wxCommandEvent& event);
+        void OnmiCopyEmailSelected(wxCommandEvent& event);
+        void OnmiCopyPassSelected(wxCommandEvent& event);
         //*)
 
-        void OnListClick(wxCommandEvent& event);
+        void OnListClick(wxMouseEvent& event);
         void OnListDblClick(wxCommandEvent& event);
         void OnListRightClick(wxMouseEvent& event);
+        void OnMouseEvent(wxMouseEvent& event);
+        void OnTabsRightUp(wxMouseEvent& event);
+        void OnMenuMoveSelected(wxCommandEvent& event);
 
         //(*Identifiers(PasswordKeeperFrame)
         static const long ID_NOTEBOOK;
         static const long idMenuNew;
-        static const long idMenuOpen;
+        static const long idSynchronize;
         static const long idMenuSave;
-        static const long idMenuSaveAs;
-        static const long idMenuMerge;
-        static const long idMenuClose;
-        static const long idMenuCloseAll;
         static const long idMenuQuit;
+        static const long idMenuTabAdd;
+        static const long idMenuTabRename;
+        static const long idMenuTabDelete;
         static const long idMenuView;
         static const long idMenuAdd;
         static const long idMenuEdit;
+        static const long ID_MENUITEM2;
+        static const long idMenuMove;
         static const long idMenuDelete;
+        static const long idMenuCopyName;
+        static const long idMenuCopyLogin;
+        static const long idMenuCopyEmail;
+        static const long idMenuCopyPass;
         static const long idMenuAbout;
         static const long ID_STATUSBAR;
         static const long idMenuViewP;
         static const long idMenuAddP;
         static const long idMenuEditP;
+        static const long ID_MENUITEM1;
+        static const long idMenuMoveP;
         static const long idMenuDeleteP;
+        static const long idMenuCopyNameP;
+        static const long idMenuCopyLoginP;
+        static const long idMenuCopyEmailP;
+        static const long idMenuCopyPassP;
+        static const long idTabAddP;
+        static const long idTabRenameP;
+        static const long idTabDeleteP;
         //*)
 
         static const long ID_LIST;
 
         //(*Declarations(PasswordKeeperFrame)
-        wxMenu puMenu;
-        wxMenuItem* miOpen;
+        wxMenuItem* miAddTab;
+        wxMenuItem* miRenameTab;
+        wxMenuItem* mpCopyPass;
+        wxMenuItem* mpTabAdd;
+        wxMenu* mpMove;
+        wxMenuItem* mpCopyEmail;
+        wxMenuItem* miDeleteTab;
         wxMenuItem* miSave;
         wxMenuItem* miEdit;
+        wxMenuItem* MenuItem2;
         wxMenuItem* mpAdd;
+        wxMenuItem* MenuItem1;
         wxMenuItem* mpEdit;
+        wxMenu* miMove;
         wxMenuItem* miView;
+        wxMenu puTabMenu;
         wxMenuItem* miAdd;
-        wxMenuItem* miCloseAll;
         wxStatusBar* sbStatus;
+        wxMenuItem* mpTabDelete;
+        wxMenuItem* miSync;
         wxMenuItem* mpDelete;
         wxMenuItem* miDelete;
-        wxMenuItem* miMerge;
-        wxBoxSizer* BoxSizer1;
-        wxMenuItem* miClose;
-        wxMenuItem* miNew;
+        wxMenuItem* miCopyPass;
+        wxMenuItem* miCopyLogin;
+        wxMenuItem* miCopyName;
+        wxMenuItem* mpCopyLogin;
+        wxMenuItem* mpTabRename;
         wxMenuItem* mpView;
-        wxMenuItem* miSaveAs;
+        wxMenuItem* mpCopyName;
+        wxMenuItem* miCopyEmail;
+        wxMenu puListMenu;
         wxMenu* miRecord;
+        wxMenuItem* miChange;
         wxNotebook* tbTabs;
         //*)
 

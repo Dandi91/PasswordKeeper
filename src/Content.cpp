@@ -9,11 +9,6 @@
 // When assigning, entire content is copied to the other list
 ///////////////////////////////////////////////////////////////
 
-CRecordList::CRecordList(const wxString& name)
-{
-  fName = name;
-}
-
 CRecordList::CRecordList(const CRecordList& value)
 {
   Assign(value);
@@ -92,6 +87,12 @@ void CContent::Clear()
   for (size_t i = 0; i < array.size(); ++i)
     delete array[i];
   array.resize(0);
+}
+
+void CContent::Sort()
+{
+  for (size_t i = 0; i < array.size(); ++i)
+    array[i]->Sort();
 }
 
 size_t CContent::Add(CRecordList* value)

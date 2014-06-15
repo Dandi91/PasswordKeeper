@@ -2,6 +2,7 @@
 <wxsmith>
 	<object class="wxDialog" name="GenDialog">
 		<title>Generate Password</title>
+		<centered>1</centered>
 		<size>400,154</size>
 		<handler function="OnInit" entry="EVT_INIT_DIALOG" />
 		<object class="wxFlexGridSizer" variable="FormSizer" member="yes">

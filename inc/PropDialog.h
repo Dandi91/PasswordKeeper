@@ -10,18 +10,18 @@
 #include <wx/dialog.h>
 //*)
 
-#include "CryptoFile.h"
-
-enum ShowMode
-{
-  smVIEW = 0,
-  smADD,
-  smEDIT
-};
+#include "Content.h"
 
 class PropDialog: public wxDialog
 {
 	public:
+
+    enum ShowMode
+    {
+      smVIEW = 0,
+      smADD,
+      smEDIT
+    };
 
 		PropDialog(wxWindow* parent,wxWindowID id=wxID_ANY);
 		virtual ~PropDialog();
