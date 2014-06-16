@@ -7,12 +7,12 @@
 //*)
 
 //(*IdInit(AuthDialog)
-const long AuthDialog::ID_TEXTCTRL1 = wxNewId();
-const long AuthDialog::ID_TEXTCTRL2 = wxNewId();
-const long AuthDialog::ID_BUTTON1 = wxNewId();
+const long AuthDialog::ID_EDLOGIN = wxNewId();
+const long AuthDialog::ID_EDPASS = wxNewId();
+const long AuthDialog::ID_BTNEW = wxNewId();
 //*)
 
-const long AuthDialog::ID_BUTTON2 = wxNewId();
+const long AuthDialog::ID_BTBACK = wxNewId();
 
 #include <wx/msgdlg.h>
 
@@ -32,15 +32,15 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	fgSizer = new wxFlexGridSizer(0, 2, 0, 0);
 	lbLogin = new wxStaticText(this, wxID_ANY, _("Login"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(lbLogin, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-	edLogin = new wxTextCtrl(this, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, wxDefaultValidator, _T("ID_TEXTCTRL1"));
+	edLogin = new wxTextCtrl(this, ID_EDLOGIN, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, wxDefaultValidator, _T("ID_EDLOGIN"));
 	fgSizer->Add(edLogin, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	lbPassword = new wxStaticText(this, wxID_ANY, _("Password"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(lbPassword, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-	edPassword = new wxTextCtrl(this, ID_TEXTCTRL2, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER|wxTE_PASSWORD, wxDefaultValidator, _T("ID_TEXTCTRL2"));
+	edPassword = new wxTextCtrl(this, ID_EDPASS, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER|wxTE_PASSWORD, wxDefaultValidator, _T("ID_EDPASS"));
 	fgSizer->Add(edPassword, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	fgSizer->Add(-1,-1,1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	bsButtons = new wxBoxSizer(wxHORIZONTAL);
-	btNew = new wxButton(this, ID_BUTTON1, _("New account..."), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
+	btNew = new wxButton(this, ID_BTNEW, _("New account..."), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BTNEW"));
 	bsButtons->Add(btNew, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	sbStdButtons = new wxStdDialogButtonSizer();
 	sbStdButtons->Realize();
@@ -52,12 +52,12 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	Layout();
 	Center();
 
-	Connect(ID_TEXTCTRL1,wxEVT_COMMAND_TEXT_ENTER,(wxObjectEventFunction)&AuthDialog::OnEnter);
-	Connect(ID_TEXTCTRL2,wxEVT_COMMAND_TEXT_ENTER,(wxObjectEventFunction)&AuthDialog::OnEnter);
-	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&AuthDialog::OnbtNewClick);
+	Connect(ID_EDLOGIN,wxEVT_COMMAND_TEXT_ENTER,(wxObjectEventFunction)&AuthDialog::OnEnter);
+	Connect(ID_EDPASS,wxEVT_COMMAND_TEXT_ENTER,(wxObjectEventFunction)&AuthDialog::OnEnter);
+	Connect(ID_BTNEW,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&AuthDialog::OnbtNewClick);
 	//*)
 
-  newButton = new wxButton(this, wxID_OK);
+  wxButton* newButton = new wxButton(this, wxID_OK);
   newButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnModalClose, this);
   sbStdButtons->AddButton(newButton);
   sbStdButtons->AddButton(new wxButton(this, wxID_CANCEL));
@@ -66,11 +66,19 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 
   wxSize windowSize = edLogin->GetSize();
   editorsSize = windowSize.GetWidth();
+
 	edPasswordSec = NULL;
+	behavior = false;
 
 	wxString accountName;
 	CSaver::Get().Read("Account", &accountName);
   edLogin->SetValue(accountName);
+
+#if defined(__WXGTK__) || defined(__WXMOTIF__)
+  // Single icon from xpm for X
+  wxIcon appIcon(icon_p2);
+  SetIcon(appIcon);
+#endif // (__WXGTK__) || (__WXMOTIF__)
 }
 
 AuthDialog::~AuthDialog()
@@ -107,47 +115,16 @@ void AuthDialog::OnModalClose(wxCommandEvent& event)
     event.Skip();
 }
 
-void AuthDialog::OnBack(wxCommandEvent& event)
+void AuthDialog::ChangeViewNewAccount(const bool state)
 {
   // Labels
-  SetLabel("Authorization");
-  lbLogin->SetLabel("Login");
-  lbPassword->SetLabel("Password");
-  btNew->SetLabel("New account...");
-  // Password repeat field
-  fgSizer->Detach(edPasswordSec);
-  fgSizer->Detach(newLabel);
-  RemoveChild(edPasswordSec);
-  RemoveChild(newLabel);
-  wxDELETE(edPasswordSec);
-  wxDELETE(newLabel);
-  // Show standart buttons
-  bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-  bsButtons->Show(sbStdButtons);
-  // Remove "Back" button
-  bsButtons->Detach(btBack);
-  RemoveChild(btBack);
-  wxDELETE(btBack);
-  // Sizers
-  fgSizer->Fit(this);
-  fgSizer->SetSizeHints(this);
-  // Bindings
-  edLogin->Unbind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnbtNewClick, this);
-  edLogin->Bind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnEnter, this);
-  edPassword->Unbind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnbtNewClick, this);
-  edPassword->Bind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnEnter, this);
-}
-
-void AuthDialog::OnbtNewClick(wxCommandEvent& event)
-{
-  if (!edPasswordSec)
+  SetLabel(state ? "Create New Account" : "Authorization");
+  lbLogin->SetLabel(state ? "New login" : "Login");
+  lbPassword->SetLabel(state ? "New password" : "Password");
+  btNew->SetLabel(state ? "Create account" : "New account...");
+  if (state)
   {
-    // Labels
-    SetLabel("Create New Account");
-    lbLogin->SetLabel("New login");
-    lbPassword->SetLabel("New password");
-    btNew->SetLabel("Create account");
-    // Password repeat field
+    // Create password repeat field and label
     wxSize size = wxDefaultSize;
     size.SetWidth(editorsSize);
     edPasswordSec = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, size, wxTE_PROCESS_ENTER | wxTE_PASSWORD, wxDefaultValidator, "wxID_ANY");
@@ -158,27 +135,63 @@ void AuthDialog::OnbtNewClick(wxCommandEvent& event)
     bsButtons->Hide(sbStdButtons);
     bsButtons->Detach(sbStdButtons);
     // Add "Back" button
-    btBack = new wxButton(this, ID_BUTTON2, "Back", wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, "ID_BUTTON2");
+    btBack = new wxButton(this, ID_BTBACK, "Back", wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, "ID_BTBACK");
     btBack->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnBack, this);
     bsButtons->Add(btBack, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    // Sizers
+    // Resize
     fgSizer->Fit(this);
     fgSizer->SetSizeHints(this);
     // Tab order / focus
     edPasswordSec->MoveAfterInTabOrder(edPassword);
     edLogin->SetFocus();
     // Event binding
-    edPasswordSec->Bind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnbtNewClick, this);
-    edLogin->Unbind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnEnter, this);
-    edLogin->Bind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnbtNewClick, this);
-    edPassword->Unbind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnEnter, this);
-    edPassword->Bind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnbtNewClick, this);
+    edPasswordSec->Bind(wxEVT_TEXT_ENTER, (wxObjectEventFunction)&AuthDialog::OnEnter, this);
   }
   else
   {
+    // Delete password repeat field and label
+    fgSizer->Detach(edPasswordSec);
+    fgSizer->Detach(newLabel);
+    RemoveChild(edPasswordSec);
+    RemoveChild(newLabel);
+    wxDELETE(edPasswordSec);
+    wxDELETE(newLabel);
+    // Show standart buttons
+    bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    bsButtons->Show(sbStdButtons);
+    // Remove "Back" button
+    bsButtons->Detach(btBack);
+    RemoveChild(btBack);
+    wxDELETE(btBack);
+    // Sizers
+    fgSizer->Fit(this);
+    fgSizer->SetSizeHints(this);
+  }
+}
+
+void AuthDialog::ChangeBehavior()
+{
+  ChangeViewNewAccount(true);
+  SetLabel("Change Account Settings");
+  btBack->SetLabel("Cancel");
+  behavior = true;
+}
+
+void AuthDialog::OnBack(wxCommandEvent& event)
+{
+  if (!behavior)
+    ChangeViewNewAccount(false);
+  else
+    EndModal(wxID_CANCEL);
+}
+
+void AuthDialog::OnbtNewClick(wxCommandEvent& event)
+{
+  if (!edPasswordSec)
+    ChangeViewNewAccount(true);
+  else
     if (CheckBeforeClose())
       EndModal(wxID_NEW);
-  }
 }
 
 void AuthDialog::OnEnter(wxCommandEvent& event)

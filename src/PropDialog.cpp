@@ -93,8 +93,13 @@ const int PropDialog::ShowModalEx(CRecord& rec, const ShowMode mode)
     edName->SetEditable(false);
     edLogin->SetEditable(false);
     edEmail->SetEditable(false);
+    fgSizer->Detach(edPass);
+    // Switch edPass to standart, no-password field
+    RemoveChild(edPass);
+    wxDELETE(edPass);
+    edPass = new wxTextCtrl(this, ID_EDPASS, rec.password, wxDefaultPosition, wxSize(321,21), 0, wxDefaultValidator, "ID_EDPASS");
+    fgSizer->Insert(7, edPass, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     edPass->SetEditable(false);
-    SendMessage((HWND)edPass->GetHandle(), EM_SETPASSWORDCHAR, 0, 0);
     AddButtonToSizer(wxID_OK, false);
   }
   if (mode == smADD)

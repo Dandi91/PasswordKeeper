@@ -17,7 +17,7 @@
 						<option>1</option>
 					</object>
 					<object class="sizeritem">
-						<object class="wxTextCtrl" name="ID_TEXTCTRL1" variable="edLogin" member="yes">
+						<object class="wxTextCtrl" name="ID_EDLOGIN" variable="edLogin" member="yes">
 							<style>wxTE_PROCESS_ENTER</style>
 							<handler function="OnEnter" entry="EVT_TEXT_ENTER" />
 						</object>
@@ -34,7 +34,7 @@
 						<option>1</option>
 					</object>
 					<object class="sizeritem">
-						<object class="wxTextCtrl" name="ID_TEXTCTRL2" variable="edPassword" member="yes">
+						<object class="wxTextCtrl" name="ID_EDPASS" variable="edPassword" member="yes">
 							<style>wxTE_PROCESS_ENTER|wxTE_PASSWORD</style>
 							<handler function="OnEnter" entry="EVT_TEXT_ENTER" />
 						</object>
@@ -50,7 +50,7 @@
 					<object class="sizeritem">
 						<object class="wxBoxSizer" variable="bsButtons" member="yes">
 							<object class="sizeritem">
-								<object class="wxButton" name="ID_BUTTON1" variable="btNew" member="yes">
+								<object class="wxButton" name="ID_BTNEW" variable="btNew" member="yes">
 									<label>New account...</label>
 									<handler function="OnbtNewClick" entry="EVT_BUTTON" />
 								</object>

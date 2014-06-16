@@ -12,7 +12,10 @@
 #include <wx/filedlg.h>
 #include <wx/clipbrd.h>
 #include <wx/icon.h>
-#include <wx/iconbndl.h>
+
+#if defined(__WXMSW__)
+  #include <wx/iconbndl.h>
+#endif
 
 //(*InternalHeaders(PasswordKeeperFrame)
 #include <wx/settings.h>
@@ -20,7 +23,6 @@
 #include <wx/string.h>
 //*)
 
-#include <wx/dynarray.h>
 #include <wx/event.h>
 #include "PropDialog.h"
 #include "AuthDialog.h"
@@ -55,8 +57,9 @@ wxString wxbuildinfo(wxbuildinfoformat format)
 
 //(*IdInit(PasswordKeeperFrame)
 const long PasswordKeeperFrame::ID_NOTEBOOK = wxNewId();
-const long PasswordKeeperFrame::idMenuNew = wxNewId();
-const long PasswordKeeperFrame::idSynchronize = wxNewId();
+const long PasswordKeeperFrame::idMenuSwitch = wxNewId();
+const long PasswordKeeperFrame::idMenuSynchronize = wxNewId();
+const long PasswordKeeperFrame::idMenuChange = wxNewId();
 const long PasswordKeeperFrame::idMenuSave = wxNewId();
 const long PasswordKeeperFrame::idMenuQuit = wxNewId();
 const long PasswordKeeperFrame::idMenuTabAdd = wxNewId();
@@ -147,10 +150,12 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     SetSizer(BoxSizer1);
     meMainMenu = new wxMenuBar();
     miAccount = new wxMenu();
-    miChange = new wxMenuItem(miAccount, idMenuNew, _("&Change...\tCtrl+N"), _("Change account"), wxITEM_NORMAL);
-    miAccount->Append(miChange);
-    miSync = new wxMenuItem(miAccount, idSynchronize, _("&Synchronize...\tCtrl+Y"), _("Synchronize account with server"), wxITEM_NORMAL);
+    miSwitch = new wxMenuItem(miAccount, idMenuSwitch, _("S&witch...\tCtrl+W"), _("Switch account"), wxITEM_NORMAL);
+    miAccount->Append(miSwitch);
+    miSync = new wxMenuItem(miAccount, idMenuSynchronize, _("S&ynchronize...\tCtrl+Y"), _("Synchronize account with server"), wxITEM_NORMAL);
     miAccount->Append(miSync);
+    miChange = new wxMenuItem(miAccount, idMenuChange, _("&Change login/password"), _("Change login or password for this account"), wxITEM_NORMAL);
+    miAccount->Append(miChange);
     miSave = new wxMenuItem(miAccount, idMenuSave, _("&Save locally\tCtrl+S"), _("Save to local file"), wxITEM_NORMAL);
     miAccount->Append(miSave);
     miAccount->AppendSeparator();
@@ -232,8 +237,8 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     BoxSizer1->SetSizeHints(this);
 
     Connect(ID_NOTEBOOK,wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED,(wxObjectEventFunction)&PasswordKeeperFrame::OntbTabsPageChanged);
-    Connect(idMenuNew,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiChangeSelected);
-    Connect(idSynchronize,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiSyncSelected);
+    Connect(idMenuSwitch,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiSwitchSelected);
+    Connect(idMenuSynchronize,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiSyncSelected);
     Connect(idMenuSave,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiSaveSelected);
     Connect(idMenuQuit,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiQuitSelected);
     Connect(idMenuTabAdd,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiAddTabSelected);
@@ -278,13 +283,21 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     account = &CAccount::Get();
 
     CSaver::Get().LoadWindow(*this, "Window");
-    SetLabel(account->GetLogin() + " - PasswordKeeper");
+    SetLabel(account->GetLogin() + " - Password Keeper");
 
     // Application icon
-    wxIconBundle bundle;
-    bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 16, 16));
-    bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 32, 32));
-    SetIcons(bundle);
+    #if defined(__WXMSW__)
+      // Multiple icon from exe resources for MSW
+      wxIconBundle bundle;
+      bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 16, 16));
+      bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 32, 32));
+      SetIcons(bundle);
+    #endif // (__WXMSW__)
+    #if defined(__WXGTK__) || defined(__WXMOTIF__)
+      // Single icon from xpm for X
+      wxIcon appIcon(icon_p2);
+      SetIcon(appIcon);
+    #endif // (__WXGTK__) || (__WXMOTIF__)
 
     UpdateTabs();
     UpdateInterface();
@@ -406,8 +419,8 @@ void PasswordKeeperFrame::ConstructMoveMenu(wxMenu* menu, const bool enable)
     menu->AppendSeparator();
   int newId = wxNewId();
   wxMenuItem* tabItem = new wxMenuItem(menu, newId, "New tab", "", wxITEM_NORMAL);
-  tabItem->Enable(enable);
   menu->Append(tabItem);
+  tabItem->Enable(enable);
   Connect(newId, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&PasswordKeeperFrame::OnMenuMoveSelected);
 }
 
@@ -504,7 +517,9 @@ void PasswordKeeperFrame::OnMouseEvent(wxMouseEvent& event)
 
 void PasswordKeeperFrame::OnTabsRightUp(wxMouseEvent& event)
 {
-  tbTabs->SetSelection(tbTabs->HitTest(event.GetPosition()));
+  int selection = tbTabs->HitTest(event.GetPosition());
+  if (selection != -1)
+    tbTabs->SetSelection();
   UpdateMenus();
   tbTabs->PopupMenu(&puTabMenu);
 }
@@ -568,7 +583,7 @@ void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
 // "Account" menu
 //////////////////////////////////////////////////////////////
 
-void PasswordKeeperFrame::OnmiChangeSelected(wxCommandEvent& event)
+void PasswordKeeperFrame::OnmiSwitchSelected(wxCommandEvent& event)
 {
   Deauthorization();
   AuthDialog dlg(this);
@@ -581,7 +596,7 @@ void PasswordKeeperFrame::OnmiChangeSelected(wxCommandEvent& event)
       account->Authorize(dlg.edLogin->GetValue(), dlg.edPassword->GetValue(), res == wxID_NEW);
       if (account->IsOk())
       {
-        SetLabel(account->GetLogin() + " - PasswordKeeper");
+        SetLabel(account->GetLogin() + " - Password Keeper");
         UpdateTabs();
         UpdateInterface();
         return;
@@ -596,6 +611,21 @@ void PasswordKeeperFrame::OnmiChangeSelected(wxCommandEvent& event)
 void PasswordKeeperFrame::OnmiSyncSelected(wxCommandEvent& event)
 {
 
+}
+
+void PasswordKeeperFrame::OnmiChangeSelected(wxCommandEvent& event)
+{
+  /*AuthDialog dlg(this);
+  dlg.ChangeBehavior();
+  int res;
+  do
+  {
+    res = dlg.ShowModal();
+    if (res == wxID_OK)
+    {
+
+    }
+  }*/
 }
 
 void PasswordKeeperFrame::OnmiSaveSelected(wxCommandEvent& event)

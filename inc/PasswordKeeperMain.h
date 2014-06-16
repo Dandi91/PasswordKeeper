@@ -52,7 +52,7 @@ class PasswordKeeperFrame: public wxFrame
         const int CurrentLine(int* selCount);
 
         //(*Handlers(PasswordKeeperFrame)
-        void OnmiChangeSelected(wxCommandEvent& event);
+        void OnmiSwitchSelected(wxCommandEvent& event);
         void OnmiSyncSelected(wxCommandEvent& event);
         void OnmiSaveSelected(wxCommandEvent& event);
         void OnmiQuitSelected(wxCommandEvent& event);
@@ -70,6 +70,7 @@ class PasswordKeeperFrame: public wxFrame
         void OnmiCopyLoginSelected(wxCommandEvent& event);
         void OnmiCopyEmailSelected(wxCommandEvent& event);
         void OnmiCopyPassSelected(wxCommandEvent& event);
+        void OnmiChangeSelected(wxCommandEvent& event);
         //*)
 
         void OnListClick(wxMouseEvent& event);
@@ -81,8 +82,9 @@ class PasswordKeeperFrame: public wxFrame
 
         //(*Identifiers(PasswordKeeperFrame)
         static const long ID_NOTEBOOK;
-        static const long idMenuNew;
-        static const long idSynchronize;
+        static const long idMenuSwitch;
+        static const long idMenuSynchronize;
+        static const long idMenuChange;
         static const long idMenuSave;
         static const long idMenuQuit;
         static const long idMenuTabAdd;
@@ -151,6 +153,7 @@ class PasswordKeeperFrame: public wxFrame
         wxMenu puListMenu;
         wxMenu* miRecord;
         wxMenuItem* miChange;
+        wxMenuItem* miSwitch;
         wxNotebook* tbTabs;
         //*)
 

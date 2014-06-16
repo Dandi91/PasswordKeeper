@@ -30,7 +30,7 @@ const int CAccount::Authorize(const wxString& login, const wxString& password, c
   if (createNew)
   {
     if (!wxDirExists(dataDir))
-      wxMkDir(dataDir);
+      wxMkDir(dataDir, 700); // -rwx------
     if (fileName.Exists())
     {
       fErrorCode = AC_ERROR_ALREADY_EXISTS;
@@ -122,10 +122,10 @@ bool CAccount::ReadFile()
   CCryptoWrap::AES256CTREncrypt(decrBuff, buff, len, fPasswordHash, iv);
 
   // CRC
-  uint32_t fileCRC32, calcCRC32 = 0;
+  unsigned long fileCRC32, calcCRC32 = 0;
   len -= sizeof(fileCRC32);
   char* CRC32position = (char*)decrBuff.GetData() + len;
-  fileCRC32 = *(uint32_t*)CRC32position;
+  fileCRC32 = *(unsigned long*)CRC32position;
   decrBuff.SetDataLen(len);
   CCryptoWrap::CRC32Sum(decrBuff, &calcCRC32);
   if (calcCRC32 != fileCRC32)
@@ -147,7 +147,7 @@ bool CAccount::WriteFile()
   CContentParser::ParseToBuffer(fContent, buff);
 
   // CRC
-  uint32_t calcCRC32 = 0;
+  unsigned long calcCRC32 = 0;
   CCryptoWrap::CRC32Sum(buff, &calcCRC32);
   buff.AppendData(&calcCRC32, sizeof(calcCRC32));
   size_t len = buff.GetDataLen();
