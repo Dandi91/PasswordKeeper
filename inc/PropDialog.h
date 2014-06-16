@@ -56,8 +56,6 @@ class PropDialog: public wxDialog
 
 		DECLARE_EVENT_TABLE()
 
-		void OnModalClose(wxCommandEvent& event);
-    bool CheckParams();
     void AddButtonToSizer(const wxWindowID id, const bool isAffirmative);
 };
 

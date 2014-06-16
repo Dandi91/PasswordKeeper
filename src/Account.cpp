@@ -13,13 +13,10 @@ const wxString errorMessages[] = {"OK",
                                    "Writing error",
                                    "Unathorizated access prohibited"};
 
-CAccount* account = NULL;
-
 CAccount& CAccount::Get()
 {
-  if (account == NULL)
-    account = new CAccount();
-  return *account;
+  static CAccount account;
+  return account;
 }
 
 const int CAccount::Authorize(const wxString& login, const wxString& password, const bool createNew = false)
@@ -28,7 +25,7 @@ const int CAccount::Authorize(const wxString& login, const wxString& password, c
     if (Deauthorize() != AC_ERROR_SUCCESS)
       return fErrorCode;
   fErrorCode = AC_ERROR_SUCCESS;
-  wxString dataDir = wxStandardPaths::Get().GetUserLocalDataDir();
+  wxString dataDir = wxStandardPaths::Get().GetUserDataDir();
   wxFileName fileName(dataDir, login, "pkf");
   if (createNew)
   {

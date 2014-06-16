@@ -25,7 +25,7 @@
 #include "PropDialog.h"
 #include "AuthDialog.h"
 #include "TabDialog.h"
-#include "RegistrySaver.h"
+#include "Saver.h"
 
 //helper functions
 enum wxbuildinfoformat {
@@ -108,7 +108,7 @@ void PutStringToClipboard(const wxString& string, const wxString& stringName)
 
 CRecordList* PasswordKeeperFrame::CurrentList()
 {
-  return account->GetContent()->GetItem(tbTabs->GetSelection());
+  return account->GetContent()->GetList(tbTabs->GetSelection());
 }
 
 const int PasswordKeeperFrame::CurrentLine(int* selCount = NULL)
@@ -277,9 +277,10 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
 
     account = &CAccount::Get();
 
-    /*CRegistrySaver saver("PasswordKeeper");
-    saver.LoadWindow(*this, "MainWindow");
-*/
+    CSaver::Get().LoadWindow(*this, "Window");
+    SetLabel(account->GetLogin() + " - PasswordKeeper");
+
+    // Application icon
     wxIconBundle bundle;
     bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 16, 16));
     bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 32, 32));
@@ -313,7 +314,7 @@ void PasswordKeeperFrame::UpdateInterface()
       f->Sort();
       wxArrayString items;
       for (size_t i = 0; i < f->GetCount(); ++i)
-        items.Add(f->GetItem(i).name);
+        items.Add(f->GetRecord(i).name);
       // Gather strings from list
       wxArrayString olds;
       for (size_t i = 0; i < lbList->GetCount(); ++i)
@@ -394,7 +395,7 @@ void PasswordKeeperFrame::ConstructMoveMenu(wxMenu* menu, const bool enable)
     if ((int)i == tbTabs->GetSelection())
       continue;
     wxString itemName;
-    itemName << "&" << i + 1 << " " << account->GetContent()->GetItem(i)->GetName();
+    itemName << "&" << i + 1 << " " << account->GetContent()->GetList(i)->GetName();
     int newId = wxNewId();
     wxMenuItem* tabItem = new wxMenuItem(menu, newId, itemName, "", wxITEM_NORMAL);
     menu->Append(tabItem);
@@ -415,7 +416,7 @@ void PasswordKeeperFrame::UpdateTabs()
   while (tbTabs->GetPageCount() > 0)
     tbTabs->RemovePage(0);
   for (size_t i = 0; i < account->GetContent()->GetCount(); ++i)
-    tbTabs->AddPage(GetTabPage(), account->GetContent()->GetItem(i)->GetName(), false);
+    tbTabs->AddPage(GetTabPage(), account->GetContent()->GetList(i)->GetName(), false);
   if (tbTabs->GetPageCount() > 0)
     tbTabs->SetSelection(0);
   if (pnPanel)
@@ -456,15 +457,7 @@ void PasswordKeeperFrame::OntbTabsPageChanged(wxNotebookEvent& event)
 
 void PasswordKeeperFrame::OnClose(wxCloseEvent& event)
 {
-  /*CRegistrySaver saver("PasswordKeeper");
-  saver.SaveWindow(*this, "MainWindow");
-  wxArrayString mru;
-  for (size_t i = 0; i < fileList.Count(); ++i)
-    if (fileList[i].GetFilePath().Cmp('?'))
-      mru.Add(fileList[i].GetFilePath());
-  saver.SaveMRU(mru, tbTabs->GetSelection());
-  wxCommandEvent cmdEvent;
-  OnmiCloseAllSelected(cmdEvent);*/
+  CSaver::Get().SaveWindow(*this, "Window");
   Deauthorization();
   event.Skip();
 }
@@ -549,7 +542,7 @@ void PasswordKeeperFrame::OnListDblClick(wxCommandEvent& event)
 {
   int selection = CurrentLine();
   if (selection != wxNOT_FOUND)
-    PutStringToClipboard(CurrentList()->GetItem(selection).password, "Password");
+    PutStringToClipboard(CurrentList()->GetRecord(selection).password, "Password");
 }
 
 void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
@@ -588,6 +581,7 @@ void PasswordKeeperFrame::OnmiChangeSelected(wxCommandEvent& event)
       account->Authorize(dlg.edLogin->GetValue(), dlg.edPassword->GetValue(), res == wxID_NEW);
       if (account->IsOk())
       {
+        SetLabel(account->GetLogin() + " - PasswordKeeper");
         UpdateTabs();
         UpdateInterface();
         return;
@@ -667,7 +661,7 @@ void PasswordKeeperFrame::OnmiDeleteTabSelected(wxCommandEvent& event)
 void PasswordKeeperFrame::OnmiViewSelected(wxCommandEvent& event)
 {
   PropDialog dlg(this);
-  dlg.ShowModalEx(CurrentList()->GetItem(CurrentLine()), PropDialog::smVIEW);
+  dlg.ShowModalEx(CurrentList()->GetRecord(CurrentLine()), PropDialog::smVIEW);
 }
 
 void PasswordKeeperFrame::OnmiAddSelected(wxCommandEvent& event)
@@ -685,7 +679,7 @@ void PasswordKeeperFrame::OnmiAddSelected(wxCommandEvent& event)
 void PasswordKeeperFrame::OnmiEditSelected(wxCommandEvent& event)
 {
   PropDialog dlg(this);
-  if (dlg.ShowModalEx(CurrentList()->GetItem(CurrentLine()), PropDialog::smEDIT) == wxID_OK)
+  if (dlg.ShowModalEx(CurrentList()->GetRecord(CurrentLine()), PropDialog::smEDIT) == wxID_OK)
   {
     account->SetSaved(false);
     UpdateInterface();
@@ -707,7 +701,7 @@ void PasswordKeeperFrame::OnMenuMoveSelected(wxCommandEvent& event)
     num -= '1';
   for (int i = selection.size() - 1; i > -1; --i)
   {
-    account->GetContent()->GetItem(num)->Add(currList->GetItem(selection[i]));
+    account->GetContent()->GetList(num)->Add(currList->GetRecord(selection[i]));
     currList->Delete(selection[i]);
   }
   UpdateInterface();
@@ -728,22 +722,22 @@ void PasswordKeeperFrame::OnmiDeleteSelected(wxCommandEvent& event)
 
 void PasswordKeeperFrame::OnmiCopyNameSelected(wxCommandEvent& event)
 {
-  PutStringToClipboard(CurrentList()->GetItem(CurrentLine()).name, "Record's name");
+  PutStringToClipboard(CurrentList()->GetRecord(CurrentLine()).name, "Record's name");
 }
 
 void PasswordKeeperFrame::OnmiCopyLoginSelected(wxCommandEvent& event)
 {
-  PutStringToClipboard(CurrentList()->GetItem(CurrentLine()).login, "Login");
+  PutStringToClipboard(CurrentList()->GetRecord(CurrentLine()).login, "Login");
 }
 
 void PasswordKeeperFrame::OnmiCopyEmailSelected(wxCommandEvent& event)
 {
-  PutStringToClipboard(CurrentList()->GetItem(CurrentLine()).email, "Email");
+  PutStringToClipboard(CurrentList()->GetRecord(CurrentLine()).email, "Email");
 }
 
 void PasswordKeeperFrame::OnmiCopyPassSelected(wxCommandEvent& event)
 {
-  PutStringToClipboard(CurrentList()->GetItem(CurrentLine()).password, "Password");
+  PutStringToClipboard(CurrentList()->GetRecord(CurrentLine()).password, "Password");
 }
 
 //////////////////////////////////////////////////////////////

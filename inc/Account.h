@@ -55,6 +55,7 @@ public:
       fErrorCode = AC_ERROR_UNAUTHORIZED;
     return fErrorCode;
   };
+
   void SetSaved(const bool value) { fIsSaved = value; };
   const int SetPassword(const wxString& value);
 

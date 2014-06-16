@@ -1,4 +1,5 @@
 #include "AuthDialog.h"
+#include "Saver.h"
 
 //(*InternalHeaders(AuthDialog)
 #include <wx/intl.h>
@@ -56,7 +57,7 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&AuthDialog::OnbtNewClick);
 	//*)
 
-  wxButton* newButton = new wxButton(this, wxID_OK);
+  newButton = new wxButton(this, wxID_OK);
   newButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnModalClose, this);
   sbStdButtons->AddButton(newButton);
   sbStdButtons->AddButton(new wxButton(this, wxID_CANCEL));
@@ -66,6 +67,10 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
   wxSize windowSize = edLogin->GetSize();
   editorsSize = windowSize.GetWidth();
 	edPasswordSec = NULL;
+
+	wxString accountName;
+	CSaver::Get().Read("Account", &accountName);
+  edLogin->SetValue(accountName);
 }
 
 AuthDialog::~AuthDialog()
@@ -74,7 +79,7 @@ AuthDialog::~AuthDialog()
 	//*)
 }
 
-bool AuthDialog::CheckParams()
+bool AuthDialog::CheckBeforeClose()
 {
   if (edLogin->GetValue() == "")
   {
@@ -92,12 +97,13 @@ bool AuthDialog::CheckParams()
       wxMessageBox("Passwords are not equal", "Error", wxOK | wxICON_ERROR);
       return false;
     }
+  CSaver::Get().Write("Account", edLogin->GetValue());
   return true;
 }
 
 void AuthDialog::OnModalClose(wxCommandEvent& event)
 {
-  if (CheckParams())
+  if (CheckBeforeClose())
     event.Skip();
 }
 
@@ -170,12 +176,13 @@ void AuthDialog::OnbtNewClick(wxCommandEvent& event)
   }
   else
   {
-    if (CheckParams())
+    if (CheckBeforeClose())
       EndModal(wxID_NEW);
   }
 }
 
 void AuthDialog::OnEnter(wxCommandEvent& event)
 {
-  EndModal(wxID_OK);
+  if (CheckBeforeClose())
+    EndModal(edPasswordSec ? wxID_NEW : wxID_OK);
 }

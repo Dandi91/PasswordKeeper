@@ -58,7 +58,7 @@ public:
   size_t Add(const CRecord& value);
   void Delete(const size_t index);
   int Find(const CRecord& value) const;
-  CRecord& GetItem(const size_t index) const { return *(array[index]); };
+  CRecord& GetRecord(const size_t index) const { return *(array[index]); };
   void Switch(const size_t indexA, const size_t indexB);
 
   // Properties
@@ -67,7 +67,7 @@ public:
   void SetName(const wxString& name) { fName = name; };
 
   // Operators
-  CRecord& operator[](const size_t index) const { return GetItem(index); };
+  CRecord& operator[](const size_t index) const { return GetRecord(index); };
   CRecordList& operator=(const CRecordList& right) { Assign(right); return *this; };
 };
 
@@ -89,14 +89,14 @@ public:
   // Elements' operations
   size_t Add(CRecordList* value);
   void Delete(const size_t index);
-  CRecordList* GetItem(const size_t index) const { return array[index]; };
+  CRecordList* GetList(const size_t index) const { return array[index]; };
   void Move(const size_t index, const size_t to);
 
   // Properties
   const size_t GetCount() const { return array.size(); };
 
   // Operators
-  CRecordList* operator[](const size_t index) const { return GetItem(index); };
+  CRecordList* operator[](const size_t index) const { return GetList(index); };
 };
 
 #endif // CONTENT_H

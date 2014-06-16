@@ -77,8 +77,6 @@ PropDialog::~PropDialog()
 void PropDialog::AddButtonToSizer(const wxWindowID id, const bool isAffirmative)
 {
   wxButton* newButton = new wxButton(this, id);
-  if (isAffirmative)
-    newButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&PropDialog::OnModalClose, this);
   dbSizer->AddButton(newButton);
 }
 
@@ -122,32 +120,6 @@ const int PropDialog::ShowModalEx(CRecord& rec, const ShowMode mode)
     rec.password = edPass->GetValue();
   }
   return res;
-}
-
-bool PropDialog::CheckParams()
-{
-  wxString msg;
-  if (edName->GetValue().Contains("="))
-    msg = "\"Name\"";
-  else if (edLogin->GetValue().Contains("="))
-    msg = "\"Login\"";
-  else if (edEmail->GetValue().Contains("="))
-    msg = "\"Email\"";
-  if (!msg.IsEmpty())
-  {
-    msg.Prepend("The field ");
-    msg.Append(" is containing an unacceptable character '='");
-    wxMessageBox(msg, "Error", wxOK | wxICON_ERROR, this);
-    return false;
-  }
-  else
-    return true;
-}
-
-void PropDialog::OnModalClose(wxCommandEvent& event)
-{
-  if (CheckParams())
-    event.Skip();
 }
 
 void PropDialog::OnbtGenerateClick(wxCommandEvent& event)

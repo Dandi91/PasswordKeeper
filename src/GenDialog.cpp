@@ -8,7 +8,7 @@
 #include <wx/msgdlg.h>
 #include <vector>
 
-#include "RegistrySaver.h"
+#include "Saver.h"
 
 //(*IdInit(GenDialog)
 const long GenDialog::ID_TEXTCTRL1 = wxNewId();
@@ -129,14 +129,14 @@ const int GenDialog::ShowModalEx(wxString& password)
 
   if (res == wxID_OK)
   {
-    CRegistrySaver saver("PasswordKeeper");
-    saver.SaveBool(cbShow->GetValue(), "Show");
-    saver.SaveBool(cbLower->GetValue(), "Lower");
-    saver.SaveBool(cbUpper->GetValue(), "Upper");
-    saver.SaveBool(cbDigits->GetValue(), "Digits");
-    saver.SaveBool(cbSpecials->GetValue(), "Specials");
-    saver.SaveStringW(edMinLength->GetValue(), "MinLength");
-    saver.SaveStringW(edMaxLength->GetValue(), "MaxLength");
+    CSaver* saver = &CSaver::Get();
+    saver->Write("Show", cbShow->GetValue());
+    saver->Write("Lower", cbLower->GetValue());
+    saver->Write("Upper", cbUpper->GetValue());
+    saver->Write("Digits", cbDigits->GetValue());
+    saver->Write("Specials", cbSpecials->GetValue());
+    saver->Write("MinLength", edMinLength->GetValue());
+    saver->Write("MaxLength", edMaxLength->GetValue());
   }
 
   return res;
@@ -166,14 +166,16 @@ void GenDialog::OncbShowClick(wxCommandEvent& event)
 
 void GenDialog::OnInit(wxInitDialogEvent& event)
 {
-  CRegistrySaver saver("PasswordKeeper");
-  cbShow->SetValue(saver.LoadBool("Show", cbShow->GetValue()));
-  cbLower->SetValue(saver.LoadBool("Lower", cbLower->GetValue()));
-  cbUpper->SetValue(saver.LoadBool("Upper", cbUpper->GetValue()));
-  cbDigits->SetValue(saver.LoadBool("Digits", cbDigits->GetValue()));
-  cbSpecials->SetValue(saver.LoadBool("Specials", cbSpecials->GetValue()));
-  edMinLength->SetValue(saver.LoadStringW("MinLength", edMinLength->GetValue()));
-  edMaxLength->SetValue(saver.LoadStringW("MaxLength", edMaxLength->GetValue()));
+  srand((unsigned int)time(NULL));
+
+  CSaver* saver = &CSaver::Get();
+  cbShow->SetValue(saver->ReadEx("Show", cbShow->GetValue()));
+  cbLower->SetValue(saver->ReadEx("Lower", cbLower->GetValue()));
+  cbUpper->SetValue(saver->ReadEx("Upper", cbUpper->GetValue()));
+  cbDigits->SetValue(saver->ReadEx("Digits", cbDigits->GetValue()));
+  cbSpecials->SetValue(saver->ReadEx("Specials", cbSpecials->GetValue()));
+  edMinLength->SetValue(saver->ReadEx("MinLength", edMinLength->GetValue()));
+  edMaxLength->SetValue(saver->ReadEx("MaxLength", edMaxLength->GetValue()));
 
   GeneratePassword();
   PasswordVisibility();
@@ -188,19 +190,14 @@ enum CharType {
 
 void GenDialog::PasswordVisibility()
 {
-  if (cbShow->GetValue())
-    SendMessage((HWND)edPassword->GetHandle(), EM_SETPASSWORDCHAR, 0, 0);
-  else
-  {
-    wxString temp = edPassword->GetValue();
-    TopSizer->Detach(edPassword);
-    RemoveChild(edPassword);
-    delete edPassword;
-    edPassword = new wxTextCtrl(this, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxSize(272,21), wxTE_PASSWORD, wxDefaultValidator, _T("ID_TEXTCTRL1"));
-    TopSizer->Insert(1, edPassword, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    edPassword->SetValue(temp);
-    Layout();
-  }
+  wxString temp = edPassword->GetValue();
+  TopSizer->Detach(edPassword);
+  RemoveChild(edPassword);
+  delete edPassword;
+  edPassword = new wxTextCtrl(this, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxSize(272,21), cbShow->GetValue() ? 0 : wxTE_PASSWORD, wxDefaultValidator, _T("ID_TEXTCTRL1"));
+  TopSizer->Insert(1, edPassword, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+  edPassword->SetValue(temp);
+  Layout();
   edPassword->SetFocus();
 }
 

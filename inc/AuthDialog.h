@@ -27,6 +27,7 @@ class AuthDialog: public wxDialog
 		wxStaticText* lbPassword;
 		//*)
 
+    wxButton* newButton;
 		wxTextCtrl* edPasswordSec;
 		wxStaticText* newLabel;
 		wxButton* btBack;
@@ -54,7 +55,7 @@ class AuthDialog: public wxDialog
 
 		void OnModalClose(wxCommandEvent& event);
 		void OnBack(wxCommandEvent& event);
-		bool CheckParams();
+		bool CheckBeforeClose();
 };
 
 #endif
