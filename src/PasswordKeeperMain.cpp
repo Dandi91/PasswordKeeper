@@ -292,12 +292,12 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
       bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 16, 16));
       bundle.AddIcon(wxIcon("MAIN", wxBITMAP_TYPE_ICO_RESOURCE, 32, 32));
       SetIcons(bundle);
-    #endif // (__WXMSW__)
+    #endif // __WXMSW__
     #if defined(__WXGTK__) || defined(__WXMOTIF__)
       // Single icon from xpm for X
       wxIcon appIcon(icon_p2);
       SetIcon(appIcon);
-    #endif // (__WXGTK__) || (__WXMOTIF__)
+    #endif // __WXGTK__ || __WXMOTIF__
 
     UpdateTabs();
     UpdateInterface();
