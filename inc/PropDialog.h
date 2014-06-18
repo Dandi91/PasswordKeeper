@@ -31,6 +31,7 @@ class PropDialog: public wxDialog
 		//(*Declarations(PropDialog)
 		wxTextCtrl* edName;
 		wxTextCtrl* edEmail;
+		wxFlexGridSizer* fgSizer;
 		wxGridBagSizer* FormSizer;
 		wxTextCtrl* edPass;
 		wxStdDialogButtonSizer* dbSizer;

@@ -37,9 +37,9 @@ bool PasswordKeeperApp::OnInit()
         wxInitAllImageHandlers();
         if ( wxsOK )
         {
-          PasswordKeeperFrame* Frame = new PasswordKeeperFrame(0);
-          Frame->Show();
-          SetTopWindow(Frame);
+        	PasswordKeeperFrame* Frame = new PasswordKeeperFrame(0);
+        	Frame->Show();
+        	SetTopWindow(Frame);
         }
         //*)
         return wxsOK;

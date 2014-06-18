@@ -1,10 +1,11 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
+#include "Content.h"
+
 #include <wx/string.h>
 #include <wx/filename.h>
 #include <wx/buffer.h>
-#include "Content.h"
 
 const static int AC_ERROR_SUCCESS           = 0;
 const static int AC_ERROR_ALREADY_EXISTS    = 1;

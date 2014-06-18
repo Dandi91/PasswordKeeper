@@ -5,7 +5,7 @@
 		<size>322,108</size>
 		<object class="wxGridBagSizer" variable="FormSizer" member="yes">
 			<object class="sizeritem">
-				<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
+				<object class="wxFlexGridSizer" variable="fgSizer" member="yes">
 					<cols>2</cols>
 					<object class="sizeritem">
 						<object class="wxStaticText" name="wxID_ANY" variable="StaticText1" member="no">

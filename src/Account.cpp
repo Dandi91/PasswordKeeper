@@ -1,10 +1,10 @@
 #include "Account.h"
 
-#include <wx/wfstream.h>
-#include <wx/stdpaths.h>
-
 #include "CryptoWrap.h"
 #include "ContentParser.h"
+
+#include <wx/wfstream.h>
+#include <wx/stdpaths.h>
 
 const wxString errorMessages[] = {"OK",
                                    "Login already exists",
