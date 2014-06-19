@@ -518,13 +518,8 @@ void PasswordKeeperFrame::OnMouseEvent(wxMouseEvent& event)
 void PasswordKeeperFrame::OnTabsRightUp(wxMouseEvent& event)
 {
   int selection = tbTabs->HitTest(event.GetPosition());
-<<<<<<< Updated upstream
-  if (selection != -1)
-    tbTabs->SetSelection();
-=======
   if (selection > -1)
     tbTabs->SetSelection(selection);
->>>>>>> Stashed changes
   UpdateMenus();
   tbTabs->PopupMenu(&puTabMenu);
 }
