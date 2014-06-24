@@ -3,6 +3,9 @@
 
 // Cryptology.h provides interfaces for cryptopp library algorythms that are used by application
 
+#define AES256_KEY_SIZE 32
+#define AES256_IV_SIZE  16
+
 #include <rsa.h>
 
 #include <wx/string.h>

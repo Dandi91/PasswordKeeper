@@ -10,9 +10,6 @@
 #include <queue.h>
 #include <files.h>
 
-#define AES256_KEY_SIZE 32
-#define AES256_IV_SIZE  16
-
 bool CRSAEncryption::LoadPublicRSAKey(const wxString& fileName)
 {
   CryptoPP::FileSource file(fileName.c_str(), true);
