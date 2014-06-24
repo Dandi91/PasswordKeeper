@@ -1,5 +1,22 @@
 #include "Content.h"
 
+void SerializeString(wxMemoryOutputStream& stream, const wxString& field)
+{
+  wxScopedCharBuffer charbuff;
+  charbuff = field.ToUTF8();
+  size_t length = charbuff.length();
+  stream.Write(&length, sizeof(length));
+  stream.Write(charbuff, length);
+}
+
+void UnserializeString(wxMemoryInputStream& stream, wxString& field)
+{
+  size_t fieldLength;
+  stream.Read(&fieldLength, sizeof(fieldLength));
+  field = wxString::FromUTF8((char*)stream.GetInputStreamBuffer()->GetBufferPos(), fieldLength);
+  stream.SeekI(fieldLength, wxFromCurrent);
+}
+
 ///////////////////////////////////////////////////////////////
 // CRecordList
 // List for storing and sorting CRecords
@@ -74,6 +91,41 @@ void CRecordList::Switch(const size_t indexA, const size_t indexB)
   }
 }
 
+void CRecordList::Serialize(wxMemoryOutputStream& stream) const
+{
+  // Write section's name
+  SerializeString(stream, fName);
+  // Write records
+  size_t recordCount = array.size();
+  stream.Write(&recordCount, sizeof(recordCount));
+  for (ArrayType::const_iterator i = array.begin(); i != array.end(); ++i)
+  {
+    SerializeString(stream, (*i)->name);
+    SerializeString(stream, (*i)->login);
+    SerializeString(stream, (*i)->email);
+    SerializeString(stream, (*i)->password);
+  }
+}
+
+void CRecordList::Unserialize(wxMemoryInputStream& stream)
+{
+  // Retrieve section's name
+  UnserializeString(stream, fName);
+  // Retrieve records
+  size_t recordCount;
+  stream.Read(&recordCount, sizeof(recordCount));
+  while (recordCount > 0)
+  {
+    CRecord record;
+    UnserializeString(stream, record.name);
+    UnserializeString(stream, record.login);
+    UnserializeString(stream, record.email);
+    UnserializeString(stream, record.password);
+    Add(record);
+    recordCount--;
+  }
+}
+
 ////////////////////////////////////////////////////////
 // CContent
 // List for storing CRecordLists
@@ -114,5 +166,28 @@ void CContent::Move(const size_t index, const size_t to)
     CRecordList* temp = array[index];
     array.erase(array.begin() + index);
     array.insert(array.begin() + to, temp);
+  }
+}
+
+void CContent::Serialize(wxMemoryOutputStream& stream) const
+{
+  size_t sectionCount = GetCount();
+  stream.Write(&sectionCount, sizeof(sectionCount));
+  for (ArrayType::const_iterator i = array.begin(); i != array.end(); ++i)
+    (*i)->Serialize(stream);
+}
+
+void CContent::Unserialize(wxMemoryInputStream& stream)
+{
+  stream.SeekI(0);
+  Clear();
+
+  size_t sectionCount;
+  stream.Read(&sectionCount, sizeof(sectionCount));
+  while (sectionCount-- > 0)
+  {
+    CRecordList* list = new CRecordList(wxEmptyString);
+    list->Unserialize(stream);
+    Add(list);
   }
 }

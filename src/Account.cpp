@@ -1,7 +1,6 @@
 #include "Account.h"
 
 #include "CryptoWrap.h"
-#include "ContentParser.h"
 
 #include <wx/wfstream.h>
 #include <wx/stdpaths.h>
@@ -11,7 +10,7 @@ const wxString errorMessages[] = {"OK",
                                    "Unknown login",
                                    "Wrong login/password",
                                    "Writing error",
-                                   "Unathorizated access prohibited"};
+                                   "Unauthorized access prohibited"};
 
 CAccount& CAccount::Get()
 {
@@ -132,7 +131,8 @@ bool CAccount::ReadFile()
     return false;
 
   // parse to CContent
-  CContentParser::ParseFromBuffer(decrBuff, fContent);
+  wxMemoryInputStream stream(decrBuff.GetData(), decrBuff.GetDataLen());
+  fContent.Unserialize(stream);
 
   fIsSaved = true;
   return true;
@@ -144,7 +144,9 @@ bool CAccount::WriteFile()
 
   // parse to buffer
   wxMemoryBuffer buff;
-  CContentParser::ParseToBuffer(fContent, buff);
+  wxMemoryOutputStream stream;
+  fContent.Serialize(stream);
+  buff.AppendData(stream.GetOutputStreamBuffer()->GetBufferStart(), stream.GetLength());
 
   // CRC
   unsigned long calcCRC32 = 0;

@@ -2,6 +2,7 @@
 #define CONTENT_H
 
 #include <wx/string.h>
+#include <wx/mstream.h>
 #include <vector>
 
 class CRecord
@@ -39,7 +40,9 @@ class CRecordList
 {
 private:
   wxString fName;
-  std::vector <CRecord*> array;
+
+  typedef std::vector<CRecord*> ArrayType;
+  ArrayType array;
 public:
   // Constructors
   CRecordList(const wxString& name)
@@ -53,6 +56,8 @@ public:
   void Assign(const CRecordList& value);
   void Clear();
   void Sort();
+  void Serialize(wxMemoryOutputStream& stream) const;
+  void Unserialize(wxMemoryInputStream& stream);
 
   // Elements' operations
   size_t Add(const CRecord& value);
@@ -74,7 +79,8 @@ public:
 class CContent
 {
 private:
-  std::vector <CRecordList*> array;
+  typedef std::vector<CRecordList*> ArrayType;
+  ArrayType array;
 public:
   // Constructors
   CContent() {};
@@ -85,6 +91,8 @@ public:
   // Methods
   void Clear();
   void Sort();
+  void Serialize(wxMemoryOutputStream& stream) const;
+  void Unserialize(wxMemoryInputStream& stream);
 
   // Elements' operations
   size_t Add(CRecordList* value);
