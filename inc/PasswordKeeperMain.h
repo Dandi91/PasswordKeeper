@@ -32,9 +32,9 @@ class PasswordKeeperFrame: public wxFrame
     private:
         CAccount* account;
 
-        bool isDragging;
-        wxPoint dragStartPos;
-        int draggedTab;
+        bool isDragging, isTesting;
+        wxPoint draggingPos;
+        int draggingTab, swappedTab;
 
         int lastLineClicked;
 
@@ -47,7 +47,7 @@ class PasswordKeeperFrame: public wxFrame
         void UpdateInterface();
         void UpdateMenus();
         void ConstructMoveMenu(wxMenu* menu, const bool enable);
-        void UpdateTabs();
+        void UpdateTabs(const bool renameOnly = false);
         CRecordList* CurrentList();
         const int CurrentLine(int* selCount);
 

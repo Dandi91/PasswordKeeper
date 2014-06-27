@@ -14,8 +14,8 @@ void CSaver::LoadWindow(wxTopLevelWindow& window, const wxString& name)
   // Current settings
   wxPoint windowPos = window.GetPosition();
   wxSize windowSize = window.GetSize();
-  top = windowPos.x;
-  left = windowPos.y;
+  left = windowPos.x;
+  top = windowPos.y;
   width = windowSize.GetWidth();
   height = windowSize.GetHeight();
   // Reading
@@ -26,7 +26,7 @@ void CSaver::LoadWindow(wxTopLevelWindow& window, const wxString& name)
   Read("Height", &height);
   Read("IsMaximized", &maximized);
   // Set new sizes
-  window.SetSize(top, left, width, height);
+  window.SetSize(left, top, width, height);
   window.Maximize(maximized);
 }
 
@@ -37,8 +37,8 @@ void CSaver::SaveWindow(const wxTopLevelWindow& window, const wxString& name)
   // Get values
   wxPoint windowPos = window.GetPosition();
   wxSize windowSize = window.GetSize();
-  top = windowPos.x;
-  left = windowPos.y;
+  left = windowPos.x;
+  top = windowPos.y;
   width = windowSize.GetWidth();
   height = windowSize.GetHeight();
   // Writing

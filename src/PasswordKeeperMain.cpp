@@ -12,6 +12,7 @@
 #include <wx/filedlg.h>
 #include <wx/clipbrd.h>
 #include <wx/icon.h>
+#include <wx/wupdlock.h>
 
 #if defined(__WXMSW__)
   #include <wx/iconbndl.h>
@@ -273,6 +274,7 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
 
     // Tab dragging
     isDragging = false;
+    isTesting = false;
     tbTabs->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PasswordKeeperFrame::OnMouseEvent, this);
     tbTabs->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&PasswordKeeperFrame::OnMouseEvent, this);
     tbTabs->Bind(wxEVT_MOTION, (wxObjectEventFunction)&PasswordKeeperFrame::OnMouseEvent, this);
@@ -318,6 +320,7 @@ void PasswordKeeperFrame::UpdateInterface()
   {
     if (tabsSelection > -1)
     {
+      wxWindowUpdateLocker lock(lbList);
       // Save selection and scrolling position before cleaning
       wxArrayInt listSelection;
       lbList->GetSelections(listSelection);
@@ -424,15 +427,23 @@ void PasswordKeeperFrame::ConstructMoveMenu(wxMenu* menu, const bool enable)
   Connect(newId, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&PasswordKeeperFrame::OnMenuMoveSelected);
 }
 
-void PasswordKeeperFrame::UpdateTabs()
+void PasswordKeeperFrame::UpdateTabs(const bool renameOnly)
 {
-  while (tbTabs->GetPageCount() > 0)
-    tbTabs->RemovePage(0);
-  for (size_t i = 0; i < account->GetContent()->GetCount(); ++i)
-    tbTabs->AddPage(GetTabPage(), account->GetContent()->GetList(i)->GetName(), false);
-  if (tbTabs->GetPageCount() > 0)
-    tbTabs->SetSelection(0);
-  if (pnPanel)
+  if (!renameOnly)
+  {
+    while (tbTabs->GetPageCount() > 0)
+      tbTabs->RemovePage(0);
+    for (size_t i = 0; i < account->GetContent()->GetCount(); ++i)
+      tbTabs->AddPage(GetTabPage(), account->GetContent()->GetList(i)->GetName(), false);
+    if (tbTabs->GetPageCount() > 0)
+      tbTabs->SetSelection(0);
+  }
+  else
+  {
+    for (size_t i = 0; i < tbTabs->GetPageCount(); ++i)
+      tbTabs->SetPageText(i, account->GetContent()->GetList(i)->GetName());
+  }
+  if (pnPanel && !isDragging)
   {
     pnPanel->Show(tbTabs->GetPageCount() > 0);
     pnPanel->SetFocus();
@@ -465,7 +476,8 @@ void PasswordKeeperFrame::Deauthorization()
 
 void PasswordKeeperFrame::OntbTabsPageChanged(wxNotebookEvent& event)
 {
-  UpdateInterface();
+  if (!isDragging)
+    UpdateInterface();
 }
 
 void PasswordKeeperFrame::OnClose(wxCloseEvent& event)
@@ -481,33 +493,56 @@ void PasswordKeeperFrame::OnClose(wxCloseEvent& event)
 
 void PasswordKeeperFrame::OnMouseEvent(wxMouseEvent& event)
 {
-  if (event.LeftDown() && !isDragging)
+  const int DRAG_THRESHOLD = 2;
+  if (event.LeftDown() && !isTesting)
   {
     // Hit test
     int tab = tbTabs->HitTest(event.GetPosition());
     if (tab > -1)
     {
-      // Start dragging
-      isDragging = true;
-      dragStartPos = event.GetPosition();
-      draggedTab = tab;
+      // Start test drag
+      isTesting = true;
+      draggingPos = event.GetPosition();
+      draggingTab = tab;
+      swappedTab = tab;
     }
   }
-  else if (event.Dragging() && isDragging)
+  else if (event.Dragging() && (isDragging || isTesting))
   {
-    int onTab = tbTabs->HitTest(event.GetPosition());
-    if ((onTab != draggedTab) && (onTab != -1))
+    // Threshold to prevent unnecessary behavior
+    if (abs(event.GetPosition().x - draggingPos.x) > DRAG_THRESHOLD)
     {
-      // If we above another existing tab move dragging tab at the new place
-      account->GetContent()->Move(draggedTab, onTab);
-      account->SetSaved(false);
-      UpdateTabs();
-      draggedTab = onTab;
-      tbTabs->SetSelection(draggedTab);
+      if (isTesting)
+      {
+        isTesting = false;
+        isDragging = true;
+      }
+      else if (isDragging)
+      {
+        int onTab = tbTabs->HitTest(event.GetPosition());
+        // Check if we move cursor above the last swapped tab to the same direction. Needed to prevent continuous swapping
+        int posDifference = event.GetPosition().x - draggingPos.x;  // If greater than 0, dragging to the right
+        int tabDifference = swappedTab - draggingTab;               // If greater than 0, swapped tab on the right of dragging tab
+        bool sameMoving = ((posDifference * tabDifference) < 0) && (onTab == swappedTab); // Moving to the same direction above the last swapped tab
+        if ((onTab != draggingTab) && (onTab != -1) && !sameMoving)
+        {
+          // If we above another existing tab move dragging tab at the new place
+          account->GetContent()->Move(draggingTab, onTab);
+          account->SetSaved(false);
+          UpdateTabs(true);
+          swappedTab = draggingTab;
+          draggingTab = onTab;
+          tbTabs->SetSelection(draggingTab);
+        }
+        draggingPos = event.GetPosition();
+      }
     }
   }
-  else if (event.LeftUp() && isDragging)
+  else if (event.LeftUp() && (isDragging || isTesting))
+  {
     isDragging = false;
+    isTesting = false;
+  }
   event.Skip();
 }
 
