@@ -1,36 +1,70 @@
 #ifndef HOSTLIST_H
 #define HOSTLIST_H
 
+#define NET_DEFAULT_PORT  35100
+
 #include <vector>
 #include <wx/string.h>
 #include <wx/filefn.h>
+#include <wx/stdpaths.h>
+#include <wx/filename.h>
 
 // Class for keeping host address and path to the public key
 class CHost
 {
 private:
   wxString addr;
+  unsigned short port;
   wxString keyFullPath;
-  wxString serverName;
   bool isInitialized;
 public:
-  CHost() { isInitialized = false; };
-  CHost(const wxString& address, const wxString& keyPath = wxEmptyString, const wxString& name = wxEmptyString)
-          { Initialize(address, keyPath, name); };
+  CHost() { isInitialized = false; port = NET_DEFAULT_PORT; };
+  CHost(const wxString& address, const unsigned short service, const wxString& keyPath = wxEmptyString)
+          { Initialize(address, service, keyPath); };
 
-  bool Initialize(const wxString& address, const wxString& keyPath, const wxString& name)
+  bool Initialize(const wxString& address, const unsigned short service, const wxString& keyPath)
   {
     addr = address;
+    port = service;
     keyFullPath = keyPath;
-    serverName = name;
-    isInitialized = (name != wxEmptyString) && (wxFileExists(keyPath));
+    isInitialized = (address != wxEmptyString) && (service) && (wxFileExists(keyPath));
     return isInitialized;
   };
 
-  const wxString& GetAddress() const { return addr; };
-  const wxString& GetPublicKeyPath() const { return keyFullPath; };
-  const wxString& GetName() const { return serverName; };
+  const wxString GetAddress() const { return addr; };
+  unsigned short GetPort() const { return port; };
+  const wxString GetPublicKeyPath() const { return keyFullPath; };
   const bool IsInitialized() const { return isInitialized; };
+
+  const wxString ConstructNewKeyPath() const
+  {
+    if (addr.IsEmpty())
+      return wxEmptyString;
+    wxFileName file(wxStandardPaths::Get().GetUserDataDir(),  // path
+                    addr /* name */, "der" /* extension */);
+    return file.GetFullPath();
+  }
+
+  // Operations with addresses in <address>:<port> form
+  // Extract port
+  static unsigned short GetPortFromString(const wxString& string)
+  {
+    unsigned long retVal;
+    string.AfterLast(':').ToULong(&retVal);
+    return retVal;
+  };
+  // Extract address
+  static wxString GetAddressFromString(const wxString& string)
+  {
+    return string.BeforeLast(':');
+  };
+  // Combine address and port
+  static wxString GetStringFromAddressAndPort(const wxString& address, const unsigned short port)
+  {
+    wxString retVal = address;
+    retVal << ':' << port;
+    return retVal;
+  };
 };
 
 class CHostList
@@ -49,7 +83,7 @@ public:
   void Store();
 
   // Elements' methods
-  size_t Add(const wxString& address, const wxString& keyPath = wxEmptyString, const wxString& name = wxEmptyString);
+  size_t Add(const wxString& address, const unsigned short service, const wxString& keyPath);
   void Delete(const size_t index);
   CHost& GetHost(const size_t index) const { return *(array[index]); };
 

@@ -29,11 +29,12 @@ void CHostList::Load()
   cfg.GetFirstGroup(group, index);
   do
   {
-    wxString name = group, address, path;
+    wxString address = group, path;
+    long port;
     cfg.SetPath(group.Prepend('/'));
-    cfg.Read("Address", &address);
+    cfg.Read("Port", &port);
     cfg.Read("KeyFile", &path);
-    Add(address, path, name);
+    Add(address, port, path);
   }
   while (cfg.GetNextGroup(group, index));
 }
@@ -58,9 +59,9 @@ void CHostList::Store()
     CHost* host = &GetHost(i);
     if (!host->IsInitialized())
       continue;
-    group = host->GetName();
+    group = host->GetAddress();
     cfg.SetPath(group.Prepend('/'));
-    cfg.Write("Address", host->GetAddress());
+    cfg.Write("Port", host->GetPort());
     cfg.Write("KeyFile", host->GetPublicKeyPath());
   }
 }
@@ -73,15 +74,15 @@ void CHostList::Sort()
   {
     size_t max = i;
     for (size_t j = i + 1; j < array.size(); ++j)
-      if (array[max]->GetName().CmpNoCase(array[j]->GetName()) > 0)
+      if (array[max]->GetAddress().CmpNoCase(array[j]->GetAddress()) > 0)
         max = j;
     Switch(i, max);
   }
 }
 
-size_t CHostList::Add(const wxString& address, const wxString& keyPath, const wxString& name)
+size_t CHostList::Add(const wxString& address, const unsigned short service, const wxString& keyPath = wxEmptyString)
 {
-  array.push_back(new CHost(address, keyPath, name));
+  array.push_back(new CHost(address, service, keyPath));
   return array.size() - 1;
 }
 
