@@ -1,5 +1,14 @@
 #include "Saver.h"
 
+#include <wx/stdpaths.h>
+
+void CSaver::EnsureDirExistance()
+{
+  wxString dataDir = wxStandardPaths::Get().GetUserDataDir();
+  if (!wxDirExists(dataDir))
+    wxMkDir(dataDir, 700);  // -rwx------
+}
+
 CSaver& CSaver::Get()
 {
   static CSaver saver;

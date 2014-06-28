@@ -28,8 +28,6 @@ const int CAccount::Authorize(const wxString& login, const wxString& password, c
   wxFileName fileName(dataDir, login, "pkf");
   if (createNew)
   {
-    if (!wxDirExists(dataDir))
-      wxMkDir(dataDir, 700); // -rwx------
     if (fileName.Exists())
     {
       fErrorCode = AC_ERROR_ALREADY_EXISTS;

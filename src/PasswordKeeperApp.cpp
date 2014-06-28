@@ -16,12 +16,14 @@
 
 #include "AuthDialog.h"
 #include "Account.h"
+#include "Saver.h"
 #include <wx/msgdlg.h>
 
 IMPLEMENT_APP(PasswordKeeperApp);
 
 bool PasswordKeeperApp::OnInit()
 {
+  CSaver::EnsureDirExistance();
   AuthDialog dlg(NULL);
   int res;
   do

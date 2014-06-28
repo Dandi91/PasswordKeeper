@@ -8,6 +8,7 @@
 class CSaver : public wxFileConfig
 {
 public:
+  static void EnsureDirExistance();
   // Static getter for single-instance use
   static CSaver& Get();
 
