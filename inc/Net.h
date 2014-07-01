@@ -87,7 +87,7 @@ public:
 class CNetThread : public wxThread
 {
 private:
-  wxMemoryBuffer packet;
+  wxMemoryBuffer sendingPacket, receivingPacket;
   bool isPacketReady;
   wxSocketClient* socket;
   wxString hostName;

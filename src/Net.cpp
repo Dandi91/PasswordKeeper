@@ -109,8 +109,8 @@ CNetThread::CNetThread(const wxString& host, const unsigned short port, wxEvtHan
 void CNetThread::SendPacket(const wxMemoryBuffer& content)
 {
   wxCriticalSectionLocker lock(dataCS);
-  packet.Clear();
-  packet.AppendData(content.GetData(), content.GetDataLen());
+  sendingPacket.Clear();
+  sendingPacket.AppendData(content.GetData(), content.GetDataLen());
   isPacketReady = true;
 }
 
@@ -124,8 +124,7 @@ void CNetThread::ReceivePacket(wxMemoryBuffer& content)
 {
   wxCriticalSectionLocker lock(dataCS);
   content.Clear();
-  content.AppendData(packet.GetData(), packet.GetDataLen());
-  packet.Clear();
+  content.AppendData(receivingPacket.GetData(), receivingPacket.GetDataLen());
 }
 
 void CNetThread::NotifyError(const NetError error)
@@ -170,7 +169,7 @@ wxThread::ExitCode CNetThread::Entry()
     if (isPacketReady)
     {
       isPacketReady = false;
-      unsigned long dataLen = packet.GetDataLen();
+      unsigned long dataLen = sendingPacket.GetDataLen();
       // Sending data length
       socket->Write(&dataLen, sizeof(dataLen));
       if (socket->Error() || (socket->GetLastIOWriteSize() != sizeof(dataLen)))
@@ -180,14 +179,13 @@ wxThread::ExitCode CNetThread::Entry()
         continue;
       }
       // Sending data
-      socket->Write(packet.GetData(), dataLen);
+      socket->Write(sendingPackets.GetData(), dataLen);
       if (socket->Error() || (socket->GetLastIOWriteSize() != dataLen))
       {
         // Sending failed
         NotifyError(NET_ERROR_SENDING_FAILED);
         continue;
       }
-      packet.Clear();
       dataLen = 0;
       // Receiving data length
       socket->Read(&dataLen, sizeof(dataLen));
@@ -198,7 +196,7 @@ wxThread::ExitCode CNetThread::Entry()
         continue;
       }
       // Receiving data
-      socket->Read(packet.GetAppendBuf(dataLen), dataLen);
+      socket->Read(receivingPacket.GetAppendBuf(dataLen), dataLen);
       if (socket->Error() || (socket->GetLastIOReadSize() != dataLen))
       {
         // Receiving failed
@@ -321,7 +319,14 @@ void CNet::OnClientEvent(ClientEvent& event)
     }
     case NET_EVENT_ERROR:
     {
-
+      if ((event.GetMessage().error == NET_ERROR_SENDING_FAILED) ||
+          (event.GetMessage().error == NET_ERROR_RECEIVING_FAILED))
+      {
+        thread.ResendPacket();
+      }
+      else
+        SendNotification(event.GetMessage().error);
+      break;
     }
   }
 }
@@ -347,7 +352,7 @@ CNet::~CNet()
   {
     thread->Delete();
     // Wait until thread sends message about it's deletion
-    // and set "thread" to NULL
+    // and sets "thread" to NULL
     while (thread)
       wxThread::This()->Sleep(5);
   }
