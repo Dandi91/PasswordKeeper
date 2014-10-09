@@ -143,6 +143,7 @@ class PasswordKeeperFrame: public wxFrame
         wxMenuItem* mpDelete;
         wxMenuItem* miDelete;
         wxMenuItem* miCopyPass;
+        wxMenuBar* meMainMenu;
         wxMenuItem* miCopyLogin;
         wxMenuItem* miCopyName;
         wxMenuItem* mpCopyLogin;

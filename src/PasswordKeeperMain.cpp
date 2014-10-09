@@ -138,7 +138,6 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     wxMenu* miAccount;
     wxMenu* miTab;
     wxMenuItem* miQuit;
-    wxMenuBar* meMainMenu;
     wxBoxSizer* BoxSizer1;
     wxMenu* miHelp;
     wxMenuItem* miAbout;
@@ -372,11 +371,15 @@ void PasswordKeeperFrame::UpdateMenus()
   singleRecordFlag &= CurrentLine(&selCount) != -1;
   multiRecordsFlag &= selCount > 0;
   // Account menu
+  miSync->Enable(account->IsAuthorized());
+  miChange->Enable(account->IsAuthorized());
   miSave->Enable(!account->IsSaved());
   // Tab menu
+  meMainMenu->EnableTop(1, account->IsAuthorized());
   miRenameTab->Enable(tabFlag);
   miDeleteTab->Enable(tabFlag);
   // Record menu
+  meMainMenu->EnableTop(2, account->IsAuthorized());
   miAdd->Enable(tabFlag);
   miView->Enable(singleRecordFlag);
   miEdit->Enable(singleRecordFlag);
@@ -429,6 +432,7 @@ void PasswordKeeperFrame::ConstructMoveMenu(wxMenu* menu, const bool enable)
 
 void PasswordKeeperFrame::UpdateTabs(const bool renameOnly)
 {
+  tbTabs->Show(account->IsAuthorized());
   if (!renameOnly)
   {
     while (tbTabs->GetPageCount() > 0)
@@ -556,7 +560,8 @@ void PasswordKeeperFrame::OnTabsRightUp(wxMouseEvent& event)
   if (selection > -1)
     tbTabs->SetSelection(selection);
   UpdateMenus();
-  tbTabs->PopupMenu(&puTabMenu);
+  if (account->IsAuthorized())
+    tbTabs->PopupMenu(&puTabMenu);
 }
 
 //////////////////////////////////////////////////////////////
@@ -609,7 +614,8 @@ void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
     }
   }
   UpdateMenus();
-  lbList->PopupMenu(&puListMenu);
+  if (account->IsAuthorized())
+    lbList->PopupMenu(&puListMenu);
 }
 
 //////////////////////////////////////////////////////////////
@@ -620,7 +626,6 @@ void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
 
 void PasswordKeeperFrame::OnmiSwitchSelected(wxCommandEvent& event)
 {
-  Deauthorization();
   AuthDialog dlg(this);
   int res;
   do
@@ -628,16 +633,20 @@ void PasswordKeeperFrame::OnmiSwitchSelected(wxCommandEvent& event)
     res = dlg.ShowModal();
     if ((res == wxID_OK) || (res == wxID_NEW))
     {
+      Deauthorization();
       account->Authorize(dlg.edLogin->GetValue(), dlg.edPassword->GetValue(), res == wxID_NEW);
+      UpdateTabs();
+      UpdateInterface();
       if (account->IsOk())
       {
         SetLabel(account->GetLogin() + " - Password Keeper");
-        UpdateTabs();
-        UpdateInterface();
         return;
       }
       else
+      {
+        SetLabel("Password Keeper");
         wxMessageBox(account->GetErrorMessage(), "Error", wxOK | wxICON_ERROR);
+      }
     }
   }
   while ((res == wxID_OK) || (res == wxID_NEW));
