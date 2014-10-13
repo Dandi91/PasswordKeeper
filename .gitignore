@@ -2,6 +2,7 @@
 *.layout
 *.depend
 *.png
+*.lnk
 
 #################
 ## Eclipse

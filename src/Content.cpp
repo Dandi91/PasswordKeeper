@@ -98,7 +98,7 @@ void CRecordList::Serialize(wxMemoryOutputStream& stream) const
   // Write records
   size_t recordCount = array.size();
   stream.Write(&recordCount, sizeof(recordCount));
-  for (ArrayType::const_iterator i = array.begin(); i != array.end(); ++i)
+  for (auto i = array.cbegin(); i != array.end(); ++i)
   {
     SerializeString(stream, (*i)->name);
     SerializeString(stream, (*i)->login);
@@ -173,7 +173,7 @@ void CContent::Serialize(wxMemoryOutputStream& stream) const
 {
   size_t sectionCount = GetCount();
   stream.Write(&sectionCount, sizeof(sectionCount));
-  for (ArrayType::const_iterator i = array.begin(); i != array.end(); ++i)
+  for (auto i = array.cbegin(); i != array.end(); ++i)
     (*i)->Serialize(stream);
 }
 
