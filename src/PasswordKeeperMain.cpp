@@ -300,6 +300,8 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     #endif // __WXGTK__ || __WXMOTIF__
 
     UpdateTabs();
+    if (tbTabs->GetSelection() > -1)
+      lbList = (wxListBox*)tbTabs->GetCurrentPage()->FindWindow(ID_LIST);
     UpdateInterface();
 }
 
