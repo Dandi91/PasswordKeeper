@@ -94,6 +94,7 @@ const long PasswordKeeperFrame::idTabDeleteP = wxNewId();
 //*)
 
 const long PasswordKeeperFrame::ID_LIST = wxNewId();
+const long PasswordKeeperFrame::ID_PANEL = wxNewId();
 
 BEGIN_EVENT_TABLE(PasswordKeeperFrame,wxFrame)
     //(*EventTable(PasswordKeeperFrame)
@@ -267,8 +268,6 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     Connect(wxID_ANY,wxEVT_CLOSE_WINDOW,(wxObjectEventFunction)&PasswordKeeperFrame::OnClose);
     //*)
 
-    pnPanel = NULL;
-    BoxSizer = NULL;
     lbList = NULL;
 
     // Tab dragging
@@ -308,8 +307,6 @@ PasswordKeeperFrame::~PasswordKeeperFrame()
 {
   //(*Destroy(PasswordKeeperFrame)
   //*)
-  if (pnPanel)
-    delete pnPanel;
 }
 
 void PasswordKeeperFrame::UpdateInterface()
@@ -447,28 +444,21 @@ void PasswordKeeperFrame::UpdateTabs(const bool renameOnly)
     for (size_t i = 0; i < tbTabs->GetPageCount(); ++i)
       tbTabs->SetPageText(i, account->GetContent()->GetList(i)->GetName());
   }
-  if (pnPanel && !isDragging)
-  {
-    pnPanel->Show(tbTabs->GetPageCount() > 0);
-    pnPanel->SetFocus();
-  }
 }
 
 wxWindow* PasswordKeeperFrame::GetTabPage()
 {
-  if (pnPanel == NULL)
-  {
-    // If hasn't created yet
-    pnPanel = new wxPanel(tbTabs);
-    pnPanel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
-    BoxSizer = new wxBoxSizer(wxHORIZONTAL);
-    lbList = new wxListBox(pnPanel, ID_LIST, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE, wxDefaultValidator, wxListBoxNameStr);
-    BoxSizer->Add(lbList, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 8);
-    pnPanel->SetSizer(BoxSizer);
-    lbList->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PasswordKeeperFrame::OnListClick, this);
-    lbList->Bind(wxEVT_LISTBOX_DCLICK, (wxObjectEventFunction)&PasswordKeeperFrame::OnListDblClick, this);
-    lbList->Bind(wxEVT_RIGHT_UP, (wxObjectEventFunction)&PasswordKeeperFrame::OnListRightClick, this);
-  }
+  // If hasn't created yet
+  wxPanel* pnPanel = new wxPanel(tbTabs, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, wxEmptyString);
+  wxBoxSizer* BoxSizer = new wxBoxSizer(wxHORIZONTAL);
+  wxListBox* lbTempList = new wxListBox(pnPanel, ID_LIST, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE, wxDefaultValidator, wxListBoxNameStr);
+  BoxSizer->Add(lbTempList, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 8);
+  pnPanel->SetSizer(BoxSizer);
+  BoxSizer->Fit(pnPanel);
+  BoxSizer->SetSizeHints(pnPanel);
+  lbTempList->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PasswordKeeperFrame::OnListClick, this);
+  lbTempList->Bind(wxEVT_LISTBOX_DCLICK, (wxObjectEventFunction)&PasswordKeeperFrame::OnListDblClick, this);
+  lbTempList->Bind(wxEVT_RIGHT_UP, (wxObjectEventFunction)&PasswordKeeperFrame::OnListRightClick, this);
   return pnPanel;
 }
 
@@ -480,8 +470,8 @@ void PasswordKeeperFrame::Deauthorization()
 
 void PasswordKeeperFrame::OntbTabsPageChanged(wxNotebookEvent& event)
 {
-  if (!isDragging)
-    UpdateInterface();
+  lbList = (wxListBox*)tbTabs->GetCurrentPage()->FindWindow(ID_LIST);
+  UpdateInterface();
 }
 
 void PasswordKeeperFrame::OnClose(wxCloseEvent& event)

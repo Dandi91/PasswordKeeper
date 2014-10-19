@@ -2,8 +2,14 @@
 #define AUTHDIALOG_H
 
 #if defined(__WXGTK__) || defined(__WXMOTIF__)
+  // Ignoring warnings from using C code in C++ code
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wwrite-strings"
+  #pragma GCC diagnostic ignored "-Wunused-variable"
   // Application icon
-  #include "icon_p2.xpm"
+  #include "../icon_p2.xpm"
+  // Restore warnings
+  #pragma GCC diagnostic pop
 #endif
 
 //(*Headers(AuthDialog)

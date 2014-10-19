@@ -38,8 +38,6 @@ class PasswordKeeperFrame: public wxFrame
 
         int lastLineClicked;
 
-        wxPanel* pnPanel;
-        wxBoxSizer* BoxSizer;
         wxListBox* lbList;
         wxWindow* GetTabPage();
 
@@ -118,6 +116,7 @@ class PasswordKeeperFrame: public wxFrame
         //*)
 
         static const long ID_LIST;
+        static const long ID_PANEL;
 
         //(*Declarations(PasswordKeeperFrame)
         wxMenuItem* miAddTab;
