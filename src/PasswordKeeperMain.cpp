@@ -143,7 +143,7 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     wxMenu* miHelp;
     wxMenuItem* miAbout;
 
-    Create(parent, id, _("Password Keeper 1.1"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("id"));
+    Create(parent, id, _("Password Keeper 1.1"), wxDefaultPosition, wxDefaultSize, wxCAPTION|wxDEFAULT_FRAME_STYLE, _T("id"));
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
     tbTabs = new wxNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxSize(463,300), 0, _T("ID_NOTEBOOK"));
@@ -636,7 +636,7 @@ void PasswordKeeperFrame::OnmiSwitchSelected(wxCommandEvent& event)
       }
       else
       {
-        SetLabel("Password Keeper");
+        SetLabel("Password Keeper 1.1");
         wxMessageBox(account->GetErrorMessage(), "Error", wxOK | wxICON_ERROR);
       }
     }

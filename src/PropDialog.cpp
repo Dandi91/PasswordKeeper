@@ -30,7 +30,7 @@ PropDialog::PropDialog(wxWindow* parent,wxWindowID id)
 	wxBoxSizer* BoxSizer1;
 	wxStaticText* StaticText4;
 
-	Create(parent, id, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("id"));
+	Create(parent, id, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxCAPTION, _T("id"));
 	SetClientSize(wxSize(322,108));
 	FormSizer = new wxGridBagSizer(0, 0);
 	fgSizer = new wxFlexGridSizer(0, 2, 0, 0);
@@ -87,7 +87,7 @@ const int PropDialog::ShowModalEx(CRecord& rec, const ShowMode mode)
   edPass->SetValue(rec.password);
   if (mode == smVIEW)
   {
-    this->SetTitle("View Record");
+    SetTitle("View Record");
     btGenerate->Show(false);
     edName->SetEditable(false);
     edLogin->SetEditable(false);
@@ -103,13 +103,13 @@ const int PropDialog::ShowModalEx(CRecord& rec, const ShowMode mode)
   }
   if (mode == smADD)
   {
-    this->SetTitle("Add Record");
+    SetTitle("Add Record");
     AddButtonToSizer(wxID_OK, true);
     AddButtonToSizer(wxID_CANCEL, false);
   }
   if (mode == smEDIT)
   {
-    this->SetTitle("Edit Record");
+    SetTitle("Edit Record");
     AddButtonToSizer(wxID_OK, true);
     AddButtonToSizer(wxID_CANCEL, false);
   }

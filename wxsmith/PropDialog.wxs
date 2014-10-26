@@ -3,6 +3,7 @@
 	<object class="wxDialog" name="PropDialog">
 		<centered>1</centered>
 		<size>322,108</size>
+		<style>wxCAPTION</style>
 		<object class="wxGridBagSizer" variable="FormSizer" member="yes">
 			<object class="sizeritem">
 				<object class="wxFlexGridSizer" variable="fgSizer" member="yes">
