@@ -461,7 +461,8 @@ wxWindow* PasswordKeeperFrame::GetTabPage()
   pnPanel->SetSizer(BoxSizer);
   BoxSizer->Fit(pnPanel);
   BoxSizer->SetSizeHints(pnPanel);
-  pnPanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PasswordKeeperFrame::OnPanelClick, this);
+  pnPanel->Bind(wxEVT_SET_FOCUS, (wxObjectEventFunction)&PasswordKeeperFrame::OnPanelFocus, this);
+  lbTempList->Bind(wxEVT_SET_FOCUS, (wxObjectEventFunction)&PasswordKeeperFrame::OnPanelFocus, this);
   lbTempList->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PasswordKeeperFrame::OnListClick, this);
   lbTempList->Bind(wxEVT_LISTBOX_DCLICK, (wxObjectEventFunction)&PasswordKeeperFrame::OnListDblClick, this);
   lbTempList->Bind(wxEVT_LEFT_DCLICK, (wxObjectEventFunction)&PasswordKeeperFrame::OnListDblClick, this);
@@ -488,7 +489,7 @@ void PasswordKeeperFrame::OnClose(wxCloseEvent& event)
   event.Skip();
 }
 
-void PasswordKeeperFrame::OnPanelClick(wxMouseEvent& event)
+void PasswordKeeperFrame::OnPanelFocus(wxFocusEvent& event)
 {
   tbTabs->SetFocus();
 }
@@ -575,7 +576,7 @@ void PasswordKeeperFrame::OnListClick(wxMouseEvent& event)
   int lastLineClicked = CurrentLine();
   int selecting = lbList->HitTest(event.GetPosition());
   if (!event.ControlDown() && !event.ShiftDown())
-    lbList->SetSelection(wxNOT_FOUND);
+    lbList->DeselectAll();
   if (!event.ShiftDown())
   {
     lastLineClicked = selecting;
@@ -592,6 +593,7 @@ void PasswordKeeperFrame::OnListClick(wxMouseEvent& event)
         (lastLineClicked < selecting) ? ++i : --i;
       }
       lbList->SetSelection(selecting, true);
+      event.Skip();
     }
   UpdateMenus();
 }
@@ -601,6 +603,7 @@ void PasswordKeeperFrame::OnListDblClick(wxCommandEvent& event)
   int selection = CurrentLine();
   if (selection != wxNOT_FOUND)
     PutStringToClipboard(CurrentList()->GetRecord(selection).password, "Password");
+  event.Skip();
 }
 
 void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
@@ -612,48 +615,71 @@ void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
       lbList->SetSelection(index);
     if (!lbList->IsSelected(index))
     {
-      lbList->SetSelection(wxNOT_FOUND);
+      lbList->DeselectAll();
       lbList->SetSelection(index);
     }
   }
   UpdateMenus();
   if (account->IsAuthorized())
     lbList->PopupMenu(&puListMenu);
+  event.Skip();
 }
 
 void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
 {
   int keyCode = event.GetKeyCode();
-  if ((event.GetModifiers() == wxMOD_NONE) && (lbList) && ((keyCode == WXK_UP) || (keyCode == WXK_DOWN)))
+  if ((event.GetModifiers() == wxMOD_NONE) && (lbList))
   {
-    int selection;
-    wxArrayInt selections;
-    lbList->GetSelections(selections);
-    if ((lbList->GetCount() > 0) && (selections.Count() < 2))
+    if (keyCode == WXK_RETURN)
     {
-      if (selections.Count() == 1)
-      {
-        selection = selections[0];
-        if (keyCode == WXK_UP)
-          --selection;
-        if (keyCode == WXK_DOWN)
-          ++selection;
-        if (selection < 0)
-          selection = 0;
-        if (selection > (lbList->GetCount() - 1))
-          selection = lbList->GetCount() - 1;
-      }
-      else if (selections.Count() == 0)
-      {
-        if (keyCode == WXK_UP)
-          selection = lbList->GetCount() - 1;
-        if (keyCode == WXK_DOWN)
-          selection = 0;
-      }
-      lbList->DeselectAll();
-      lbList->SetSelection(selection, true);
+      PutStringToClipboard(CurrentList()->GetRecord(CurrentLine()).password, "Password");
+      return;
     }
-    return;
+    if ((keyCode == WXK_LEFT) || (keyCode == WXK_RIGHT))
+    {
+      int selection = tbTabs->GetSelection();
+      if (keyCode == WXK_LEFT)
+        --selection;
+      if (keyCode == WXK_RIGHT)
+        ++selection;
+      if (selection < 0)
+        selection = 0;
+      if (selection > tbTabs->GetPageCount() - 1)
+        selection = tbTabs->GetPageCount() - 1;
+      tbTabs->SetSelection(selection);
+      return;
+    }
+    if ((keyCode == WXK_UP) || (keyCode == WXK_DOWN))
+    {
+      int selection;
+      wxArrayInt selections;
+      lbList->GetSelections(selections);
+      if ((lbList->GetCount() > 0) && (selections.Count() < 2))
+      {
+        if (selections.Count() == 1)
+        {
+          selection = selections[0];
+          if (keyCode == WXK_UP)
+            --selection;
+          if (keyCode == WXK_DOWN)
+            ++selection;
+          if (selection < 0)
+            selection = 0;
+          if (selection > (lbList->GetCount() - 1))
+            selection = lbList->GetCount() - 1;
+        }
+        else if (selections.Count() == 0)
+        {
+          if (keyCode == WXK_UP)
+            selection = lbList->GetCount() - 1;
+          if (keyCode == WXK_DOWN)
+            selection = 0;
+        }
+        lbList->DeselectAll();
+        lbList->SetSelection(selection, true);
+      }
+      return;
+    }
   }
   event.Skip();
 }

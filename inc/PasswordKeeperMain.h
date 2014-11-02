@@ -73,7 +73,7 @@ class PasswordKeeperFrame: public wxFrame
         void OnListDblClick(wxCommandEvent& event);
         void OnListRightClick(wxMouseEvent& event);
         void OnListKeyPressed(wxKeyEvent& event);
-        void OnPanelClick(wxMouseEvent& event);
+        void OnPanelFocus(wxFocusEvent& event);
         void OnMouseEvent(wxMouseEvent& event);
         void OnTabsRightUp(wxMouseEvent& event);
         void OnMenuMoveSelected(wxCommandEvent& event);

@@ -28,7 +28,7 @@ $(shell mkdir -p $(OBJPATH))
 $(shell mkdir -p $(BINPATH))
 
 # wx-config output
-WXCONFIG = wx-config --version=3.0 $(WXSTATIC) --unicode=yes $(WXBUILD)
+WXCONFIG = wx-config --version=3.0 --toolkit=gtk3 $(WXSTATIC) --unicode=yes $(WXBUILD)
 WXFLAGS = $(shell $(WXCONFIG) --cflags)
 WXLIBS = $(shell $(WXCONFIG) --libs)
 
