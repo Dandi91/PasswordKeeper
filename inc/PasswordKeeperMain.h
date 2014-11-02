@@ -36,8 +36,6 @@ class PasswordKeeperFrame: public wxFrame
         wxPoint draggingPos;
         int draggingTab, swappedTab;
 
-        int lastLineClicked;
-
         wxListBox* lbList;
         wxWindow* GetTabPage();
 
@@ -74,6 +72,8 @@ class PasswordKeeperFrame: public wxFrame
         void OnListClick(wxMouseEvent& event);
         void OnListDblClick(wxCommandEvent& event);
         void OnListRightClick(wxMouseEvent& event);
+        void OnListKeyPressed(wxKeyEvent& event);
+        void OnPanelClick(wxMouseEvent& event);
         void OnMouseEvent(wxMouseEvent& event);
         void OnTabsRightUp(wxMouseEvent& event);
         void OnMenuMoveSelected(wxCommandEvent& event);

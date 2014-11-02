@@ -143,10 +143,10 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     wxMenu* miHelp;
     wxMenuItem* miAbout;
 
-    Create(parent, id, _("Password Keeper 1.1"), wxDefaultPosition, wxDefaultSize, wxCAPTION|wxDEFAULT_FRAME_STYLE, _T("id"));
+    Create(parent, id, _("Password Keeper 1.1"), wxDefaultPosition, wxDefaultSize, wxCAPTION|wxDEFAULT_FRAME_STYLE|wxWANTS_CHARS, _T("id"));
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
-    tbTabs = new wxNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxSize(463,300), 0, _T("ID_NOTEBOOK"));
+    tbTabs = new wxNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxSize(463,300), wxWANTS_CHARS, _T("ID_NOTEBOOK"));
     BoxSizer1->Add(tbTabs, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     SetSizer(BoxSizer1);
     meMainMenu = new wxMenuBar();
@@ -279,6 +279,9 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
 
     // Tab popup menu
     tbTabs->Bind(wxEVT_RIGHT_UP, (wxObjectEventFunction)&PasswordKeeperFrame::OnTabsRightUp, this);
+
+    // List up and down navigation (should be binded to tbTabs)
+    tbTabs->Bind(wxEVT_KEY_DOWN, (wxObjectEventFunction)&PasswordKeeperFrame::OnListKeyPressed, this);
 
     account = &CAccount::Get();
 
@@ -450,16 +453,18 @@ void PasswordKeeperFrame::UpdateTabs(const bool renameOnly)
 
 wxWindow* PasswordKeeperFrame::GetTabPage()
 {
-  // If hasn't created yet
+  // Create new panel with a list for the tab
   wxPanel* pnPanel = new wxPanel(tbTabs, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, wxEmptyString);
   wxBoxSizer* BoxSizer = new wxBoxSizer(wxHORIZONTAL);
-  wxListBox* lbTempList = new wxListBox(pnPanel, ID_LIST, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE, wxDefaultValidator, wxListBoxNameStr);
+  wxListBox* lbTempList = new wxListBox(pnPanel, ID_LIST, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE|wxLB_NEEDED_SB, wxDefaultValidator, wxListBoxNameStr);
   BoxSizer->Add(lbTempList, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 8);
   pnPanel->SetSizer(BoxSizer);
   BoxSizer->Fit(pnPanel);
   BoxSizer->SetSizeHints(pnPanel);
+  pnPanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PasswordKeeperFrame::OnPanelClick, this);
   lbTempList->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&PasswordKeeperFrame::OnListClick, this);
   lbTempList->Bind(wxEVT_LISTBOX_DCLICK, (wxObjectEventFunction)&PasswordKeeperFrame::OnListDblClick, this);
+  lbTempList->Bind(wxEVT_LEFT_DCLICK, (wxObjectEventFunction)&PasswordKeeperFrame::OnListDblClick, this);
   lbTempList->Bind(wxEVT_RIGHT_UP, (wxObjectEventFunction)&PasswordKeeperFrame::OnListRightClick, this);
   return pnPanel;
 }
@@ -481,6 +486,11 @@ void PasswordKeeperFrame::OnClose(wxCloseEvent& event)
   CSaver::Get().SaveWindow(*this, "Window");
   Deauthorization();
   event.Skip();
+}
+
+void PasswordKeeperFrame::OnPanelClick(wxMouseEvent& event)
+{
+  tbTabs->SetFocus();
 }
 
 //////////////////////////////////////////////////////////////
@@ -562,6 +572,7 @@ void PasswordKeeperFrame::OnTabsRightUp(wxMouseEvent& event)
 
 void PasswordKeeperFrame::OnListClick(wxMouseEvent& event)
 {
+  int lastLineClicked = CurrentLine();
   int selecting = lbList->HitTest(event.GetPosition());
   if (!event.ControlDown() && !event.ShiftDown())
     lbList->SetSelection(wxNOT_FOUND);
@@ -608,6 +619,43 @@ void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
   UpdateMenus();
   if (account->IsAuthorized())
     lbList->PopupMenu(&puListMenu);
+}
+
+void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
+{
+  int keyCode = event.GetKeyCode();
+  if ((event.GetModifiers() == wxMOD_NONE) && (lbList) && ((keyCode == WXK_UP) || (keyCode == WXK_DOWN)))
+  {
+    int selection;
+    wxArrayInt selections;
+    lbList->GetSelections(selections);
+    if ((lbList->GetCount() > 0) && (selections.Count() < 2))
+    {
+      if (selections.Count() == 1)
+      {
+        selection = selections[0];
+        if (keyCode == WXK_UP)
+          --selection;
+        if (keyCode == WXK_DOWN)
+          ++selection;
+        if (selection < 0)
+          selection = 0;
+        if (selection > (lbList->GetCount() - 1))
+          selection = lbList->GetCount() - 1;
+      }
+      else if (selections.Count() == 0)
+      {
+        if (keyCode == WXK_UP)
+          selection = lbList->GetCount() - 1;
+        if (keyCode == WXK_DOWN)
+          selection = 0;
+      }
+      lbList->DeselectAll();
+      lbList->SetSelection(selection, true);
+    }
+    return;
+  }
+  event.Skip();
 }
 
 //////////////////////////////////////////////////////////////
