@@ -630,7 +630,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
   int keyCode = event.GetKeyCode();
   if ((event.GetModifiers() == wxMOD_NONE) && (lbList))
   {
-    if (keyCode == WXK_RETURN)
+    if (((keyCode == WXK_RETURN) || (keyCode == WXK_NUMPAD_ENTER))  && (CurrentLine() != wxNOT_FOUND))
     {
       PutStringToClipboard(CurrentList()->GetRecord(CurrentLine()).password, "Password");
       return;
@@ -644,7 +644,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
         ++selection;
       if (selection < 0)
         selection = 0;
-      if (selection > tbTabs->GetPageCount() - 1)
+      if ((unsigned int)selection > tbTabs->GetPageCount() - 1)
         selection = tbTabs->GetPageCount() - 1;
       tbTabs->SetSelection(selection);
       return;
@@ -665,7 +665,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
             ++selection;
           if (selection < 0)
             selection = 0;
-          if (selection > (lbList->GetCount() - 1))
+          if ((unsigned int)selection > lbList->GetCount() - 1)
             selection = lbList->GetCount() - 1;
         }
         else if (selections.Count() == 0)
