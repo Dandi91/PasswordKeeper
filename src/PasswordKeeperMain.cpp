@@ -652,6 +652,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
       if ((unsigned int)selection > tbTabs->GetPageCount() - 1)
         selection = tbTabs->GetPageCount() - 1;
       tbTabs->SetSelection(selection);
+      UpdateMenus();
       return;
     }
     if ((keyCode == WXK_UP) || (keyCode == WXK_DOWN))
@@ -681,6 +682,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
         }
         lbList->DeselectAll();
         lbList->SetSelection(selection, true);
+        UpdateMenus();
       }
       return;
     }
