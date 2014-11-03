@@ -53,6 +53,11 @@ wxString wxbuildinfo(wxbuildinfoformat format)
 #endif // wxUSE_UNICODE
     }
 
+    wxbuild << "\n\nPassword Keeper v0.1 alpha\n";
+    wxbuild << "More or less functional and stable alpha release.\n\n";
+    wxbuild << "Alex Andreev (Dandi91@github.com)\n";
+    wxbuild << "Questions/comments: andreev.aleksandr.34@gmail.com";
+
     return wxbuild;
 }
 
@@ -627,7 +632,7 @@ void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
 
 void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
 {
-  int keyCode = event.GetKeyCode();
+  int selection = -1, keyCode = event.GetKeyCode();
   if ((event.GetModifiers() == wxMOD_NONE) && (lbList))
   {
     if (((keyCode == WXK_RETURN) || (keyCode == WXK_NUMPAD_ENTER))  && (CurrentLine() != wxNOT_FOUND))
@@ -637,7 +642,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
     }
     if ((keyCode == WXK_LEFT) || (keyCode == WXK_RIGHT))
     {
-      int selection = tbTabs->GetSelection();
+      selection = tbTabs->GetSelection();
       if (keyCode == WXK_LEFT)
         --selection;
       if (keyCode == WXK_RIGHT)
@@ -651,7 +656,6 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
     }
     if ((keyCode == WXK_UP) || (keyCode == WXK_DOWN))
     {
-      int selection;
       wxArrayInt selections;
       lbList->GetSelections(selections);
       if ((lbList->GetCount() > 0) && (selections.Count() < 2))
@@ -887,5 +891,5 @@ void PasswordKeeperFrame::OnmiCopyPassSelected(wxCommandEvent& event)
 void PasswordKeeperFrame::OnmiAboutSelected(wxCommandEvent& event)
 {
   wxString msg = wxbuildinfo(long_f);
-  wxMessageBox(msg, _("Welcome to..."));
+  wxMessageBox(msg, _("Password Keeper"));
 }

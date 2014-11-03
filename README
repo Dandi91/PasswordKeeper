@@ -1,0 +1,40 @@
+Password Keeper by Alex Andreev (Dandi91@github.com)
+
+About:
+  Password Keeper is a cross-platform application capable of secure storing
+  your passwords and related information (ex. login, email, etc.).
+  I have plans for adding synchronization functions using a server application
+  under Linux platforms. It will include updating passwords through a server
+  and a web interface in case you don't have an access to a client in certain
+  places (public machines or smartphones, for example).
+  There also might be an Android application in the far future.
+
+Security:
+  AES256-CTR is used for local stored data. For a secure internet transactions
+  I plan to use RSA for handshaking/verifications and AES256-CTR for content
+  exchange.
+
+Libraries:
+  GUI is built using wxWidgets (wxwidgets.org). Used version: 3.0.2
+  Cryptography is provided by crypto++ (cryptopp.com). Used version: 5.6.2
+
+Building/Compilation:
+  Under Windows, a binary can be compiled using Code::Blocks IDE and GCC 
+  (project included). You should set up correct paths and specifications for
+  your wxWidgets and crypto++ libraries in order to compile Password Keeper.
+  In the future there will be a makefile for different toolchains.
+
+  Under Linux, you can compile a binary using GNUmakefile and GCC toolchain
+  (Code::Blocks project for Linux systems is also provided). Available options
+  for the makefile are BUILD=debug\release and STATIC=yes\no. Of course, you
+  have to have compiled and installed wxWidgets and crypto++ libraries with 
+  correct versions on your machine. In the future I will rework the makefile
+  for different toolchains as well.
+
+Version history:
+  v0.1 alpha
+    The first release of a basic stable version without network synchronization.
+    Minor bugs included.
+
+Contacts/questions/comments:
+  Alex Andreev (Dandi91@github.com)
