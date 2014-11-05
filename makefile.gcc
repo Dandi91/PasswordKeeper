@@ -1,0 +1,97 @@
+# Compilers
+RESCOMP = windres.exe
+CXX = mingw32-g++.exe
+
+# Paths
+WX = D:\Projects\wxWidgets-3.0.2
+CRYPTOPP = ..\cryptolib
+
+# Flags
+CXXFLAGS = -Wall -std=gnu++11 -pipe -mthreads
+RESFLAGS = -J rc -O coff
+LDFLAGS = -mthreads -mwindows
+
+# Binary name
+BIN = PasswordKeeper.exe
+
+# Defines
+DEFS = __GNUWIN32__ __WXMSW__
+
+# Libraries
+CRYPTOPPLIB = crypto
+WINLIBS = kernel32 user32 gdi32 winspool comdlg32 advapi32 shell32 ole32 oleaut32 uuid comctl32 wsock32 odbc32
+WXLIBS = wxmsw30
+WXLIBS_NONUNC = wxpng wxjpeg wxtiff wxzlib
+
+# Builds
+ifneq ($(UNICODE),no)
+# Unicode-build
+WX_UNCSFX = u
+DEFS := $(DEFS) wxUSE_UNICODE
+else
+# Non-unicode-build
+endif
+
+ifneq ($(BUILD),debug)
+# Release build
+override BUILD := release
+CXXFLAGS := $(CXXFLAGS) -O2
+LDFLAGS := $(LDFLAGS) -s
+else
+# Debug build
+CXXFLAGS := $(CXXFLAGS) -g
+DEFS := $(DEFS) __WXDEBUG__
+WX_DBGSFX = d
+endif
+
+# Includes
+WXINC = $(WX)\include $(WX)\lib\gcc_lib\msw$(WX_UNCSFX)$(WX_DBGSFX)
+INC = $(WXINC) $(CRYPTOPP) inc
+WXLIBINC = $(WX)\lib\gcc_lib
+
+# Paths
+OBJPATH = obj\$(BUILD)
+BINPATH = bin\$(BUILD)
+$(shell mkdir $(OBJPATH))
+$(shell mkdir $(BINPATH))
+
+INC := $(patsubst %,-I%,$(INC))
+WXINC := $(patsubst %,-I%,$(WXINC))
+DEFS := $(patsubst %,-D%,$(DEFS))
+WXLIBINC := $(patsubst %,-L%,$(WXLIBINC))
+WINLIBS := $(patsubst %,-l%,$(WINLIBS))
+WXLIBS := $(patsubst %,-l%$(WX_UNCSFX)$(WX_DBGSFX),$(WXLIBS))
+WXLIBS_NONUNC := $(patsubst %,-l%$(WX_DBGSFX),$(WXLIBS_NONUNC))
+CRYPTOPPLIB := $(CRYPTOPP)\$(CRYPTOPPLIB)$(WX_DBGSFX).a
+
+VPATH = src $(OBJPATH) $(BINPATH)
+
+# Sources from
+SRCS = $(sort $(patsubst src/%,%,$(wildcard src/*.cpp)))
+
+# Resources
+RES = $(sort $(wildcard *.rc))
+RES := $(RES:.rc=.res)
+RESOBJ = $(patsubst %,$(OBJPATH)/%,$(RES))
+
+# Object files
+OBJS = $(SRCS:.cpp=.o)
+OBJRES = $(patsubst %,$(OBJPATH)/%,$(OBJS))
+
+.PHONY: all clean
+
+all: $(BIN)
+
+clean:
+	rd /S /Q $(OBJPATH)
+	rd /S /Q $(BINPATH)
+
+$(BIN) : $(RES) $(OBJS)
+	$(CXX) -o $(BINPATH)\$(BIN) $(OBJRES) $(RESOBJ) $(LDFLAGS) $(WXLIBINC) $(WXLIBS) $(WXLIBS_NONUNC) $(CRYPTOPPLIB) $(WINLIBS)
+
+%.res : %.rc
+	$(RESCOMP) $(WXINC) $(RESFLAGS) -i $< -o $(OBJPATH)\$@
+
+%.o : %.cpp
+	$(CXX) $(CXXFLAGS) $(DEFS) $(INC) -c $< -o $(OBJPATH)\$@
+
