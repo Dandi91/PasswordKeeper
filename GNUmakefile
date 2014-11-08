@@ -50,7 +50,7 @@ SRCS = $(patsubst src/%,%,$(wildcard src/*.cpp))
 OBJS = $(SRCS:.cpp=.o)
 OBJRES = $(patsubst %,$(OBJPATH)/%,$(OBJS))
 
-.PHONY: all clean install remove
+.PHONY: all clean delhist install remove
 
 all: $(BIN)
 
@@ -59,6 +59,9 @@ install:
 
 remove:
 	rm /usr/local/bin/$(BIN)
+
+delhist:
+	find -type f -name *~* -exec rm -i {} \;
 
 clean:
 	rm -rf $(BINPATH) $(OBJPATH)
