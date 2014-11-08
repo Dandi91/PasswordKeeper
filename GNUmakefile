@@ -4,32 +4,30 @@ CXX = g++
 INC = inc /usr/include/cryptopp
 LIB = cryptopp
 BIN = pkeep
+WXTOOLKIT = gtk3
+WXVERSION = 3.0
 
 # Builds
 ifneq ($(STATIC),yes)
-WXSTATIC = --static=no
-else
-WXSTATIC = --static=yes
+override STATIC = no
 endif
 
 ifneq ($(BUILD),debug)
-override BUILD := release
+override BUILD = release
 CXXFLAGS := $(CXXFLAGS) -O2
 LDFLAGS = -s
-WXBUILD = --debug=no
+WXDEBUG = no
 else
 CXXFLAGS := $(CXXFLAGS) -g
-WXBUILD = --debug=yes
+WXDEBUG = yes
 endif
 
 # Paths
 OBJPATH = obj/$(BUILD)
 BINPATH = bin/$(BUILD)
-$(shell mkdir -p $(OBJPATH))
-$(shell mkdir -p $(BINPATH))
 
 # wx-config output
-WXCONFIG = wx-config --version=3.0 --toolkit=gtk3 $(WXSTATIC) --unicode=yes $(WXBUILD)
+WXCONFIG = wx-config --version=$(WXVERSION) --toolkit=$(WXTOOLKIT) --static=$(STATIC) --unicode=yes --debug=$(WXDEBUG)
 WXFLAGS = $(shell $(WXCONFIG) --cflags)
 WXLIBS = $(shell $(WXCONFIG) --libs)
 
@@ -55,7 +53,7 @@ OBJRES = $(patsubst %,$(OBJPATH)/%,$(OBJS))
 all: $(BIN)
 
 install:
-	cp -f bin/release/$(BIN) /usr/local/bin/
+	cp -f $(BINPATH)/$(BIN) /usr/local/bin/
 
 remove:
 	rm /usr/local/bin/$(BIN)
@@ -66,9 +64,11 @@ delhist:
 clean:
 	rm -rf $(BINPATH) $(OBJPATH)
 
-$(BIN) : $(OBJS)
+$(OBJPATH) $(BINPATH):
+	mkdir -p $@
+
+$(BIN) : $(OBJPATH) $(BINPATH) $(OBJS)
 	$(CXX) -o $(BINPATH)/$(BIN) $(OBJRES) $(LDFLAGS) $(WXLIBS) $(LIB)
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) $(WXFLAGS) $(INC) -c $< -o $(OBJPATH)/$@
-

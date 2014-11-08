@@ -3,18 +3,29 @@ RESCOMP = windres.exe
 CXX = mingw32-g++.exe
 
 # Paths
-# wxWidgets directory (it should contain 'include' and 'lib' subdirectories)
-WX = D:\Projects\wxWidgets-3.0.2
-# Crypto++ directory that should contain .a file(s) and headers for linking
-CRYPTOPP = ..\cryptolib
+# Uncomment and define WX variable for wxWidgets directory (it should contain 'include' and 'lib' subdirectories)
+# WX = path\to\wx-widgets
+# Uncomment and define CRYPTOPP variable for crypto++ directory that should contain .a file(s) and headers for linking
+# CRYPTOPP = path\to\crypto++
+
+ifndef WX
+$(error WX variable must be defined. Look at the lines 6 and 7)
+endif
+
+ifndef CRYPTOPP
+$(error CRYPTOPP variable must be defined. Look at the lines 8 and 9)
+endif
 
 # Flags
 CXXFLAGS = -Wall -std=gnu++11 -pipe -mthreads
 RESFLAGS = -J rc -O coff
-LDFLAGS = -mthreads
+LDFLAGS = -mthreads -mwindows
 
 # Binary name
 BIN = PasswordKeeper.exe
+
+# DLL name base. Use $(WX_DBGSFX) for place 'd' character for a debug version of the library
+DLLBASE = wxmsw30u$(WX_DBGSFX)_gcc_custom.dll
 
 # Defines
 DEFS = __GNUWIN32__ __WXMSW__ wxUSE_UNICODE
@@ -42,40 +53,38 @@ WXINC = $(WX)\lib
 # Static/shared build
 ifneq ($(STATIC),no)
 # Static build
-WXINC := $(WXINC)\lib\gcc_lib
-LDFLAGS := $(LDFLAGS) -mwindows
-# List of win32 libraries, that will be linked
+override STATIC := yes
+WXINC := $(WXINC)\gcc_lib
+# List of win32 libraries that will be linked
 WINLIBS = kernel32 user32 gdi32 winspool comdlg32 advapi32 shell32 ole32 oleaut32 uuid comctl32 wsock32 odbc32
 # wx libraries (only unicode versions with u-suffix)
 WXLIBS = wxmsw30u wxpng wxjpeg wxtiff wxzlib
 else
 # Shared build
 DEFS := $(DEFS) WXUSINGDLL
-WXINC := $(WXINC)\lib\gcc_dll
+WXINC := $(WXINC)\gcc_dll
 # wx libraries (only unicode versions with u-suffix)
 WXLIBS = wxmsw30u
 endif
 
 # Includes
+WXLIBINC := $(WXINC)
 WXINC := $(WX)\include $(WXINC)\mswu$(WX_DBGSFX)
 INC = $(WXINC) $(CRYPTOPP) inc
-WXLIBINC = $(WXINC)
 
 # Paths
 OBJPATH = obj\$(BUILD)
 BINPATH = bin\$(BUILD)
-$(shell mkdir $(OBJPATH))
-$(shell mkdir $(BINPATH))
 
 INC := $(patsubst %,-I%,$(INC))
 WXINC := $(patsubst %,-I%,$(WXINC))
 DEFS := $(patsubst %,-D%,$(DEFS))
-LIBINC = $(patsubst %,-L%,$(WXLIBINC) $(CRYPTOPP))
+LIBINC = $(patsubst %,-L%,$(WXLIBINC))
 
 # Libraries with prefixes and suffixes
 WINLIBS := $(patsubst %,-l%,$(WINLIBS))
 WXLIBS := $(patsubst %,-l%$(WX_DBGSFX),$(WXLIBS))
-CRYPTOPPLIB := $(CRYPTOPPLIB)$(WX_DBGSFX).a
+CRYPTOPPLIB := $(CRYPTOPP)\$(CRYPTOPPLIB)$(WX_DBGSFX).a
 LIBS = $(WXLIBS) $(CRYPTOPPLIB) $(WINLIBS)
 
 VPATH = src $(OBJPATH) $(BINPATH)
@@ -99,8 +108,14 @@ clean:
 	rd /S /Q $(OBJPATH)
 	rd /S /Q $(BINPATH)
 
-$(BIN) : $(RES) $(OBJS)
+$(OBJPATH) $(BINPATH):
+	mkdir $@
+
+$(BIN) : $(OBJPATH) $(BINPATH) $(RES) $(OBJS)
 	$(CXX) -o $(BINPATH)\$(BIN) $(OBJRES) $(LDFLAGS) $(LIBINC) $(LIBS)
+ifeq ($(STATIC),no)
+	copy /Y $(WXLIBINC)\$(DLLBASE) $(BINPATH)
+endif
 
 %.res : %.rc
 	$(RESCOMP) $(WXINC) $(RESFLAGS) -i $< -o $(OBJPATH)\$@

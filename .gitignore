@@ -3,6 +3,7 @@
 *.depend
 *.png
 *.lnk
+makefile.gcc
 
 #################
 ## Eclipse
