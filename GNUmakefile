@@ -1,23 +1,32 @@
 # User-defined section (flags, compiler, include paths, libraries)
 CXXFLAGS = -Wall -std=gnu++11
+LDFLAGS =
 CXX = g++
 INC = inc /usr/include/cryptopp
+# Name for crypto++ library
 LIB = cryptopp
+# Name for the output binary
 BIN = pkeep
+# Features of your wxWidgets installation (toolkit gtk3/gtk2, version 3.0/2.8)
 WXTOOLKIT = gtk3
 WXVERSION = 3.0
 
 # Builds
+# Static/shared build
 ifneq ($(STATIC),yes)
+# Shared build
 override STATIC = no
 endif
 
+# Debug/release build
 ifneq ($(BUILD),debug)
+# Release build
 override BUILD = release
 CXXFLAGS := $(CXXFLAGS) -O2
-LDFLAGS = -s
+LDFLAGS := $(LDFLAGS) -s
 WXDEBUG = no
 else
+# Debug build
 CXXFLAGS := $(CXXFLAGS) -g
 WXDEBUG = yes
 endif
@@ -41,7 +50,7 @@ vpath %.cpp src
 vpath %.o $(OBJPATH)
 vpath $(BIN) $(BINPATH)
 
-# Sources from
+# Sources
 SRCS = $(patsubst src/%,%,$(wildcard src/*.cpp))
 
 # Object files
@@ -64,7 +73,7 @@ delhist:
 clean:
 	rm -rf $(BINPATH) $(OBJPATH)
 
-$(OBJPATH) $(BINPATH):
+$(OBJPATH) $(BINPATH) :
 	mkdir -p $@
 
 $(BIN) : $(OBJPATH) $(BINPATH) $(OBJS)

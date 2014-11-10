@@ -57,13 +57,13 @@ override STATIC := yes
 WXINC := $(WXINC)\gcc_lib
 # List of win32 libraries that will be linked
 WINLIBS = kernel32 user32 gdi32 winspool comdlg32 advapi32 shell32 ole32 oleaut32 uuid comctl32 wsock32 odbc32
-# wx libraries (only unicode versions with u-suffix)
+# wx libraries (without 'd' suffix that will be added automatically in case of a debug build)
 WXLIBS = wxmsw30u wxpng wxjpeg wxtiff wxzlib
 else
 # Shared build
 DEFS := $(DEFS) WXUSINGDLL
 WXINC := $(WXINC)\gcc_dll
-# wx libraries (only unicode versions with u-suffix)
+# wx libraries (without 'd' suffix that will be added automatically in case of a debug build)
 WXLIBS = wxmsw30u
 endif
 
@@ -89,7 +89,7 @@ LIBS = $(WXLIBS) $(CRYPTOPPLIB) $(WINLIBS)
 
 VPATH = src $(OBJPATH) $(BINPATH)
 
-# Sources from
+# Sources
 SRCS = $(sort $(patsubst src/%,%,$(wildcard src/*.cpp)))
 
 # Resources
@@ -108,7 +108,7 @@ clean:
 	rd /S /Q $(OBJPATH)
 	rd /S /Q $(BINPATH)
 
-$(OBJPATH) $(BINPATH):
+$(OBJPATH) $(BINPATH) :
 	mkdir $@
 
 $(BIN) : $(OBJPATH) $(BINPATH) $(RES) $(OBJS)
@@ -122,4 +122,3 @@ endif
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) $(DEFS) $(INC) -c $< -o $(OBJPATH)\$@
-
