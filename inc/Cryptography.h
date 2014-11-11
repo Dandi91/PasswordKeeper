@@ -6,7 +6,14 @@
 #define AES256_KEY_SIZE 32
 #define AES256_IV_SIZE  16
 
+// Ignoring unused variables
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
 #include <rsa.h>
+#pragma GCC diagnostic pop
+
+// Definition for Windows
+typedef unsigned char u_char;
 
 // CRSAEncryption provides CryptoPP::RSA::PublicKey wrapping for more convenient use
 class CRSAEncryption
