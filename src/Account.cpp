@@ -1,6 +1,6 @@
 #include "Account.h"
 
-#include "Cryptology.h"
+#include "wxCryptography.h"
 #include "ContentParser.h"
 
 #include <wx/wfstream.h>
@@ -11,7 +11,7 @@ const wxString errorMessages[] = {"OK",
                                    "Unknown login",
                                    "Wrong login/password",
                                    "Writing error",
-                                   "Unathorizated access prohibited"};
+                                   "Unauthorized access prohibited"};
 
 CAccount& CAccount::Get()
 {
