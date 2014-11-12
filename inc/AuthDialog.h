@@ -24,10 +24,17 @@ class AuthDialog: public wxDialog
 {
 	public:
 
+	  typedef enum {
+      dbLogin,
+      dbChange,
+      dbMerge
+	  } DialogBehavior;
+
 		AuthDialog(wxWindow* parent,wxWindowID id=wxID_ANY,const wxPoint& pos=wxDefaultPosition,const wxSize& size=wxDefaultSize);
 		virtual ~AuthDialog();
 
     void ChangeBehavior();
+    void MergeBehavior();
 
 		//(*Declarations(AuthDialog)
 		wxStdDialogButtonSizer* sbStdButtons;
@@ -57,7 +64,7 @@ class AuthDialog: public wxDialog
 	private:
 
     int editorsSize;
-    bool behavior;
+    DialogBehavior behavior;
 
 		//(*Handlers(AuthDialog)
 		void OnbtNewClick(wxCommandEvent& event);

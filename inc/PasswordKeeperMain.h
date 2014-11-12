@@ -67,6 +67,7 @@ class PasswordKeeperFrame: public wxFrame
         void OnmiCopyEmailSelected(wxCommandEvent& event);
         void OnmiCopyPassSelected(wxCommandEvent& event);
         void OnmiChangeSelected(wxCommandEvent& event);
+        void OnmiMergeSelected(wxCommandEvent& event);
         //*)
 
         void OnListClick(wxMouseEvent& event);
@@ -84,6 +85,7 @@ class PasswordKeeperFrame: public wxFrame
         static const long idMenuSynchronize;
         static const long idMenuChange;
         static const long idMenuSave;
+        static const long idMenuMerge;
         static const long idMenuQuit;
         static const long idMenuTabAdd;
         static const long idMenuTabRename;
@@ -142,6 +144,7 @@ class PasswordKeeperFrame: public wxFrame
         wxMenuItem* mpDelete;
         wxMenuItem* miDelete;
         wxMenuItem* miCopyPass;
+        wxMenuItem* miMerge;
         wxMenuBar* meMainMenu;
         wxMenuItem* miCopyLogin;
         wxMenuItem* miCopyName;

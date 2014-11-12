@@ -44,7 +44,7 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	bsButtons->Add(btNew, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	sbStdButtons = new wxStdDialogButtonSizer();
 	sbStdButtons->Realize();
-	bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
 	fgSizer->Add(bsButtons, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
 	BoxSizer1->Add(fgSizer, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	SetSizer(BoxSizer1);
@@ -68,7 +68,7 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
   editorsSize = windowSize.GetWidth();
 
 	edPasswordSec = NULL;
-	behavior = false;
+	behavior = dbLogin;
 
 	wxString accountName;
 	CSaver::Get().Read("Account", &accountName);
@@ -105,7 +105,8 @@ bool AuthDialog::CheckBeforeClose()
       wxMessageBox("Passwords are not equal", "Error", wxOK | wxICON_ERROR);
       return false;
     }
-  CSaver::Get().Write("Account", edLogin->GetValue());
+  if (behavior == dbLogin)
+    CSaver::Get().Write("Account", edLogin->GetValue());
   return true;
 }
 
@@ -174,15 +175,31 @@ void AuthDialog::ChangeBehavior()
   ChangeViewNewAccount(true);
   SetLabel("Change Account Settings");
   btBack->SetLabel("Cancel");
-  behavior = true;
+  behavior = dbChange;
+}
+
+void AuthDialog::MergeBehavior()
+{
+  SetLabel("Merging Account Settings");
+  edLogin->Clear();
+  btNew->Hide();
+  fgSizer->Fit(this);
+  fgSizer->SetSizeHints(this);
+  behavior = dbMerge;
 }
 
 void AuthDialog::OnBack(wxCommandEvent& event)
 {
-  if (!behavior)
-    ChangeViewNewAccount(false);
-  else
-    EndModal(wxID_CANCEL);
+  switch (behavior)
+  {
+    case dbChange:
+    case dbMerge:
+      EndModal(wxID_CANCEL);
+      break;
+    case dbLogin:
+      ChangeViewNewAccount(false);
+      break;
+  }
 }
 
 void AuthDialog::OnbtNewClick(wxCommandEvent& event)

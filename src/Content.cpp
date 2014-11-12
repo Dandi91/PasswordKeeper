@@ -45,6 +45,54 @@ void CRecordList::Clear()
   array.resize(0);
 }
 
+void CRecordList::Merge(const CRecordList& mergingList)
+{
+  for (auto i = mergingList.array.cbegin(); i != mergingList.array.end(); ++i)
+  {
+    bool hasRecord = false;
+    CRecord* similarRecord = NULL;
+    for (auto j = array.cbegin(); j != array.end(); ++j)
+      if ((*i)->name == (*j)->name)
+      {
+        hasRecord = true;
+        similarRecord = *j;
+        break;
+      }
+    if (hasRecord)
+    {
+      // Names are the same, but other fields differ
+      if ((**i) != *similarRecord)
+      {
+        // If, in at least one pair of fields, both fields contain different strings,
+        // copy the entire record from merging list with different name
+        if ((!similarRecord->login.IsEmpty() && !(*i)->login.IsEmpty() && (similarRecord->login != (*i)->login)) ||
+            (!similarRecord->email.IsEmpty() && !(*i)->email.IsEmpty() && (similarRecord->email != (*i)->email)) ||
+            (!similarRecord->password.IsEmpty() && !(*i)->password.IsEmpty() && (similarRecord->password != (*i)->password)))
+        {
+          CRecord newRecord;
+          newRecord = **i;
+          newRecord.name.Append(" (merged)");
+          Add(newRecord);
+        }
+        // If one of the fields in our list is empty and
+        // the same field in the merging record contains string,
+        // we copy this string from merging record
+        if (similarRecord->login.IsEmpty() && !(*i)->login.IsEmpty())
+          similarRecord->login = (*i)->login;
+        if (similarRecord->email.IsEmpty() && !(*i)->email.IsEmpty())
+          similarRecord->email = (*i)->email;
+        if (similarRecord->password.IsEmpty() && !(*i)->password.IsEmpty())
+          similarRecord->password = (*i)->password;
+      }
+      // If all fields are the same - don't copy anything
+    }
+    else
+      // If record has different name - copy entire record
+      Add(**i);
+  }
+  Sort();
+}
+
 void CRecordList::Sort()
 {
   if (array.size() < 2)
@@ -139,6 +187,26 @@ void CContent::Clear()
   for (size_t i = 0; i < array.size(); ++i)
     delete array[i];
   array.resize(0);
+}
+
+void CContent::Merge(const CContent& mergingContent)
+{
+  for (auto i = mergingContent.array.cbegin(); i != mergingContent.array.end(); ++i)
+  {
+    bool hasList = false;
+    CRecordList* similarList = NULL;
+    for (auto j = array.cbegin(); j != array.end(); ++j)
+      if ((*i)->GetName() == (*j)->GetName())
+      {
+        hasList = true;
+        similarList = *j;
+        break;
+      }
+    if (hasList)
+      similarList->Merge(**i);
+    else
+      Add(new CRecordList(**i));
+  }
 }
 
 void CContent::Sort()

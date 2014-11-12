@@ -10,6 +10,7 @@ const wxString errorMessages[] = {"OK",
                                    "Unknown login",
                                    "Wrong login/password",
                                    "Writing error",
+                                   "Reading error",
                                    "Unauthorized access prohibited"};
 
 CAccount& CAccount::Get()
@@ -90,6 +91,27 @@ const int CAccount::SaveContent()
 {
   if (fIsAuthorized)
     fErrorCode = WriteFile() ? AC_ERROR_SUCCESS : AC_ERROR_WRITING;
+  else
+    fErrorCode = AC_ERROR_UNAUTHORIZED;
+  return fErrorCode;
+}
+
+int CAccount::MergeLocally(const wxString& fileName, const wxString& login, const wxString& password)
+{
+  if (fIsAuthorized)
+  {
+    CAccount mergingAccout;
+    mergingAccout.fLogin = login;
+    SHADigest(password, mergingAccout.fPasswordHash);
+    mergingAccout.fFile.Assign(fileName);
+    if (mergingAccout.ReadFile())
+    {
+      fContent.Merge(mergingAccout.fContent);
+      fErrorCode = AC_ERROR_SUCCESS;
+    }
+    else
+      fErrorCode = AC_ERROR_WRONG_PASSWORD;
+  }
   else
     fErrorCode = AC_ERROR_UNAUTHORIZED;
   return fErrorCode;
