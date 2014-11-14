@@ -762,17 +762,19 @@ void PasswordKeeperFrame::OnmiMergeSelected(wxCommandEvent& event)
   if (openFileDialog.ShowModal() != wxID_OK)
     return;
   AuthDialog dlg(this);
-  dlg.MergeBehavior();
+  dlg.MergeBehavior(openFileDialog.GetFilename());
   if (dlg.ShowModal() != wxID_OK)
     return;
-  account->MergeLocally(openFileDialog.GetPath(), dlg.edLogin->GetValue(), dlg.edPassword->GetValue());
+  wxString log;
+  account->MergeLocally(openFileDialog.GetPath(), dlg.edLogin->GetValue(), dlg.edPassword->GetValue(), &log);
   if (!account->IsOk())
     wxMessageBox(account->GetErrorMessage(), "Error", wxOK | wxICON_ERROR);
   else
   {
     UpdateTabs();
     UpdateInterface();
-    wxMessageBox("Merging has been completed successfully.\nYou may need to check your account for duplicating records.", "Information", wxOK | wxICON_INFORMATION);
+    wxMessageBox("Merging with \"" + openFileDialog.GetFilename() + "\" has been completed successfully.\n" +
+                 "You may need to check your account and the log below for duplicating records.\n\n" + log, "Information", wxOK | wxICON_INFORMATION);
   }
 }
 

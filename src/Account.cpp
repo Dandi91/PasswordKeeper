@@ -96,7 +96,7 @@ const int CAccount::SaveContent()
   return fErrorCode;
 }
 
-int CAccount::MergeLocally(const wxString& fileName, const wxString& login, const wxString& password)
+int CAccount::MergeLocally(const wxString& fileName, const wxString& login, const wxString& password, wxString* outputLog)
 {
   if (fIsAuthorized)
   {
@@ -106,7 +106,7 @@ int CAccount::MergeLocally(const wxString& fileName, const wxString& login, cons
     mergingAccout.fFile.Assign(fileName);
     if (mergingAccout.ReadFile())
     {
-      fContent.Merge(mergingAccout.fContent);
+      fContent.Merge(mergingAccout.fContent, outputLog);
       fErrorCode = AC_ERROR_SUCCESS;
     }
     else

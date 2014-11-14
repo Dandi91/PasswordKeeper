@@ -34,7 +34,7 @@ class AuthDialog: public wxDialog
 		virtual ~AuthDialog();
 
     void ChangeBehavior();
-    void MergeBehavior();
+    void MergeBehavior(const wxString& fileName);
 
 		//(*Declarations(AuthDialog)
 		wxStdDialogButtonSizer* sbStdButtons;

@@ -45,8 +45,9 @@ void CRecordList::Clear()
   array.resize(0);
 }
 
-void CRecordList::Merge(const CRecordList& mergingList)
+void CRecordList::Merge(const CRecordList& mergingList, wxString* outputLog)
 {
+  bool logEvents = (outputLog != NULL);
   for (auto i = mergingList.array.cbegin(); i != mergingList.array.end(); ++i)
   {
     bool hasRecord = false;
@@ -73,6 +74,8 @@ void CRecordList::Merge(const CRecordList& mergingList)
           newRecord = **i;
           newRecord.name.Append(" (merged)");
           Add(newRecord);
+          if (logEvents)
+            *outputLog << "Adding the conflict record \"" << newRecord.name << "\"\n";
         }
         // If one of the fields in our list is empty and
         // the same field in the merging record contains string,
@@ -83,12 +86,18 @@ void CRecordList::Merge(const CRecordList& mergingList)
           similarRecord->email = (*i)->email;
         if (similarRecord->password.IsEmpty() && !(*i)->password.IsEmpty())
           similarRecord->password = (*i)->password;
+        if (logEvents)
+          *outputLog << "Merging the records \"" << similarRecord->name << "\"\n";
       }
       // If all fields are the same - don't copy anything
     }
     else
       // If record has different name - copy entire record
+    {
       Add(**i);
+      if (logEvents)
+        *outputLog << "Adding the new record \"" << (*i)->name << "\"\n";
+    }
   }
   Sort();
 }
@@ -189,8 +198,9 @@ void CContent::Clear()
   array.resize(0);
 }
 
-void CContent::Merge(const CContent& mergingContent)
+void CContent::Merge(const CContent& mergingContent, wxString* outputLog)
 {
+  bool logEvents = (outputLog != NULL);
   for (auto i = mergingContent.array.cbegin(); i != mergingContent.array.end(); ++i)
   {
     bool hasList = false;
@@ -203,9 +213,17 @@ void CContent::Merge(const CContent& mergingContent)
         break;
       }
     if (hasList)
-      similarList->Merge(**i);
+    {
+      if (logEvents)
+        *outputLog << "Merging tabs with the same name \"" << (*i)->GetName() << "\"\n";
+      similarList->Merge(**i, outputLog);
+    }
     else
+    {
+      if (logEvents)
+        *outputLog << "Adding new tab \"" << (*i)->GetName() << "\"\n";
       Add(new CRecordList(**i));
+    }
   }
 }
 

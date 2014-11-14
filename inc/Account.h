@@ -38,7 +38,7 @@ public:
   // Content-related functions
   CContent* GetContent() { return &fContent; };
   const int SaveContent();
-  int MergeLocally(const wxString& fileName, const wxString& login, const wxString& password);
+  int MergeLocally(const wxString& fileName, const wxString& login, const wxString& password, wxString* outputLog = NULL);
 
   // Error handling
   const bool IsOk() const { return fErrorCode == AC_ERROR_SUCCESS; };

@@ -178,9 +178,9 @@ void AuthDialog::ChangeBehavior()
   behavior = dbChange;
 }
 
-void AuthDialog::MergeBehavior()
+void AuthDialog::MergeBehavior(const wxString& fileName)
 {
-  SetLabel("Merging Account Settings");
+  SetLabel("Account Settings for \"" + fileName + "\"");
   edLogin->Clear();
   btNew->Hide();
   fgSizer->Fit(this);
