@@ -13,8 +13,11 @@ const long AuthDialog::ID_BTNEW = wxNewId();
 //*)
 
 const long AuthDialog::ID_BTBACK = wxNewId();
+const long AuthDialog::ID_BTRELOCATE = wxNewId();
 
 #include <wx/msgdlg.h>
+#include <wx/dirdlg.h>
+#include <wx/stdpaths.h>
 
 BEGIN_EVENT_TABLE(AuthDialog,wxDialog)
 	//(*EventTable(AuthDialog)
@@ -56,6 +59,11 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	Connect(ID_EDPASS,wxEVT_COMMAND_TEXT_ENTER,(wxObjectEventFunction)&AuthDialog::OnEnter);
 	Connect(ID_BTNEW,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&AuthDialog::OnbtNewClick);
 	//*)
+
+
+  btRelocate = new wxButton(this, ID_BTRELOCATE, "Relocate...", wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BTRELOCATE"));
+  btRelocate->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnRelocate, this);
+  bsButtons->Insert(0, btRelocate, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 
   wxButton* newButton = new wxButton(this, wxID_OK);
   newButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnModalClose, this);
@@ -183,6 +191,7 @@ void AuthDialog::MergeBehavior(const wxString& fileName)
   SetLabel("Account Settings for \"" + fileName + "\"");
   edLogin->Clear();
   btNew->Hide();
+  btRelocate->Hide();
   fgSizer->Fit(this);
   fgSizer->SetSizeHints(this);
   behavior = dbMerge;
@@ -199,6 +208,22 @@ void AuthDialog::OnBack(wxCommandEvent& event)
     case dbLogin:
       ChangeViewNewAccount(false);
       break;
+  }
+}
+
+void AuthDialog::OnRelocate(wxCommandEvent& event)
+{
+  wxDirDialog dirDialog(this, "Select directory with accounts", CSaver::Get().Read("AccountDirectory", wxStandardPaths::Get().GetUserDataDir()));
+  if (dirDialog.ShowModal() == wxID_OK)
+  {
+    wxString dir = dirDialog.GetPath();
+    if (wxDirExists(dir))
+    {
+      CSaver::Get().Write("AccountDirectory", dir);
+      CSaver::Get().Flush();
+    }
+    else
+      wxMessageBox("Selected directory does not exist. Return to the default setting.", "Error", wxOK | wxICON_ERROR);
   }
 }
 
