@@ -132,7 +132,7 @@ void AuthDialog::ChangeViewNewAccount(const bool state)
     newLabel = new wxStaticText(this, wxID_ANY, "Repeat password", wxDefaultPosition, wxDefaultSize, 0, "wxID_ANY");
     fgSizer->Insert(4, newLabel, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
     fgSizer->Insert(5, edPasswordSec, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    // Hide standart buttons
+    // Hide standard buttons
     bsButtons->Hide(sbStdButtons);
     bsButtons->Detach(sbStdButtons);
     // Add "Back" button
@@ -157,7 +157,7 @@ void AuthDialog::ChangeViewNewAccount(const bool state)
     RemoveChild(newLabel);
     wxDELETE(edPasswordSec);
     wxDELETE(newLabel);
-    // Show standart buttons
+    // Show standard buttons
     bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     bsButtons->Show(sbStdButtons);
     // Remove "Back" button

@@ -63,7 +63,7 @@ struct NetMsg
 const wxEventType wxEVT_CLIENT = wxNewEventType();
 
 // ClientEvent is an event class for notifying the main thread about working thread's events
-class ClientEvent : public wxEvent
+class ClientEvent : public wxThreadEvent
 {
 public:
   ClientEvent(void* pSender, NetMsg message)
@@ -77,7 +77,7 @@ public:
   void SetMessage(const NetMsg message) { msg = message; };
   NetMsg GetMessage() const { return msg; };
 
-  virtual wxEvent* Clone() const { return new ClientEvent(*this); };
+  virtual wxEvent* Clone() const { return new ClientEvent(sender, msg); };
 
   void* sender;
   NetMsg msg;
@@ -128,6 +128,7 @@ private:
   CCryptoProvider cryptoProvider;
   void OnClientEvent(ClientEvent& event);
   void SendNotification(const NetError code);
+  void CloseThread();
 
   void SavePublicKey();
 

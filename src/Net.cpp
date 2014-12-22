@@ -136,7 +136,7 @@ void CNetThread::NotifyMainThread(const NetEvent event, const NetError error = N
 {
   NetMsg msg = {event, error};
   ClientEvent evt(this, msg);
-  mainThreadListener->AddPendingEvent(evt);
+  wxQueueEvent(mainThreadListener, evt.Clone());
 }
 
 wxThread::ExitCode CNetThread::Entry()
@@ -261,8 +261,8 @@ void CNet::OnClientEvent(ClientEvent& event)
         RequestPublicKey(); // If we don't have key yet
       else
       {
-        ValidateKey();      // If we already have key
-        DoHandshake();
+        if (ValidateKey())      // If we already have key
+          DoHandshake();
       }
       break;
     }
@@ -273,8 +273,8 @@ void CNet::OnClientEvent(ClientEvent& event)
         task = ntNothing;
         // After receiving key from server
         SavePublicKey();
-        ValidateKey();
-        DoHandshake();
+        if (ValidateKey())
+          DoHandshake();
       }
       else if (task == ntHandshaking)
       {
@@ -355,6 +355,15 @@ CNet::~CNet()
     // and sets "thread" to NULL
     while (thread)
       wxThread::This()->Sleep(5);
+  }
+}
+
+void CNet::CloseThread()
+{
+  if (thread)
+  {
+    terminating = true;
+    thread->Delete();
   }
 }
 
