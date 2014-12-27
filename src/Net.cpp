@@ -98,11 +98,9 @@ void CCryptoProvider::PutStringDigest(const wxString& string, wxMemoryBuffer& bu
 // CNetThread implementation
 ///////////////////////////////////////////////////////
 
-CNetThread::CNetThread(const wxString& host, const unsigned short port, wxEvtHandler* listener) : wxThread(wxTHREAD_DETACHED)
+CNetThread::CNetThread(const wxString& host, const unsigned short port, wxEvtHandler* listener, wxSemaphore* semaphore) :
+        wxThread(wxTHREAD_DETACHED), hostName(host), service(port), mainThreadListener(listener), doneSemaphore(semaphore)
 {
-  hostName = host;
-  service = port;
-  mainThreadListener = listener;
   isPacketReady = false;
 }
 
@@ -207,6 +205,7 @@ wxThread::ExitCode CNetThread::Entry()
     }
   }
   Cleanup();
+  doneSemaphore->Post();
   NotifyMainThread(NET_EVENT_DISCONNECTED);
   return 0;
 }
@@ -233,7 +232,7 @@ bool CNet::ValidateKey()
   bool res = cryptoProvider.LoadPublicRSAKey(CurrentHost->GetPublicKeyPath());
   if (!res)
   {
-    thread->Delete();
+    StopThread();
     SendNotification(NET_ERROR_INVALID_KEY);
   }
   return res;
@@ -250,7 +249,7 @@ void CNet::SavePublicKey()
 
 void CNet::OnClientEvent(ClientEvent& event)
 {
-  if (event.sender != thread)
+  if (event.sender != thread || !IsThreadAlive())
     return;
   switch (event.GetMessage().event)
   {
@@ -258,10 +257,10 @@ void CNet::OnClientEvent(ClientEvent& event)
     {
       task = ntNothing;
       if (!CurrentHost->IsInitialized())
-        RequestPublicKey(); // If we don't have key yet
+        RequestPublicKey();   // If we don't have key yet
       else
       {
-        if (ValidateKey())      // If we already have key
+        if (ValidateKey())    // If we already have key
           DoHandshake();
       }
       break;
@@ -279,6 +278,7 @@ void CNet::OnClientEvent(ClientEvent& event)
       else if (task == ntHandshaking)
       {
         task = ntNothing;
+        // Check handshake result
         wxMemoryBuffer packet, data;
         thread->ReceivePacket(packet);
         if (cryptoProvider.Decrypt(data, packet))
@@ -291,7 +291,7 @@ void CNet::OnClientEvent(ClientEvent& event)
         }
         else
         {
-          thread->Delete();
+          StopThread();
           SendNotification(NET_ERROR_HANDSHAKE_CLIENT_FAILED);
         }
       }
@@ -300,21 +300,22 @@ void CNet::OnClientEvent(ClientEvent& event)
         task = ntNothing;
         wxMemoryBuffer packet, data;
         thread->ReceivePacket(packet);
-        // Check
+        // Check transmission result
         if (cryptoProvider.Decrypt(data, packet))
         {
 
         }
         else
+        {
+          StopThread();
           SendNotification(NET_ERROR_VERIFYING_FAILED);
+        }
       }
       break;
     }
     case NET_EVENT_DISCONNECTED:
     {
-      thread = NULL;
-      task = ntNothing;
-      handshaked = false;
+      CleanThread();
       break;
     }
     case NET_EVENT_ERROR:
@@ -325,7 +326,10 @@ void CNet::OnClientEvent(ClientEvent& event)
         thread->ResendPacket();
       }
       else
+      {
+        CleanThread();
         SendNotification(event.GetMessage().error);
+      }
       break;
     }
   }
@@ -343,36 +347,61 @@ CNet::CNet()
   errorCode = NET_ERROR_SUCCESS;
   task = ntNothing;
   handshaked = false;
+  terminating = false;
   thread = NULL;
+  doneSemaphore = NULL;
 }
 
 CNet::~CNet()
 {
-  if (thread)
+  if (IsThreadAlive())
   {
-    thread->Delete();
+    StopThread();
     // Wait until thread sends message about it's deletion
-    // and sets "thread" to NULL
-    while (thread)
-      wxThread::This()->Sleep(5);
+    doneSemaphore->Wait();
   }
+  delete doneSemaphore;
 }
 
-void CNet::CloseThread()
+void CNet::StopThread()
 {
-  if (thread)
+  if (IsThreadAlive())
   {
     terminating = true;
     thread->Delete();
   }
 }
 
+void CNet::CleanThread()
+{
+  if (!IsThreadAlive())
+  {
+    if (doneSemaphore)
+    {
+      doneSemaphore->Wait();
+      delete doneSemaphore;
+      doneSemaphore = NULL;
+    }
+    thread = NULL;
+    task = ntNothing;
+    handshaked = false;
+    terminating = false;
+  }
+}
+
 bool CNet::InitializeConnect()
 {
-  if (CurrentHost)
+  if (!CurrentHost)
   {
+    SendNotification(NET_ERROR_HOST_NOT_SELECTED);
+    return false;
+  }
+  if (!IsThreadAlive())
+  {
+    CleanThread();
     task = ntConnecting;
-    thread = new CNetThread(CurrentHost->GetAddress(), CurrentHost->GetPort(), this);
+    doneSemaphore = new wxSemaphore();
+    thread = new CNetThread(CurrentHost->GetAddress(), CurrentHost->GetPort(), this, doneSemaphore);
     Bind(wxEVT_CLIENT, (wxObjectEventFunction)&CNet::OnClientEvent, this);
     if (thread->Run() != wxTHREAD_NO_ERROR)
     {
@@ -384,14 +413,14 @@ bool CNet::InitializeConnect()
   }
   else
   {
-    SendNotification(NET_ERROR_HOST_NOT_SELECTED);
+    SendNotification(NET_ERROR_ALREADY_CONNECTED);
     return false;
   }
 }
 
 void CNet::RequestPublicKey()
 {
-  if (thread && (task == ntNothing))
+  if (IsThreadAlive() && (task == ntNothing))
   {
     // Building key request packet
     wxMemoryBuffer packet;
@@ -403,7 +432,7 @@ void CNet::RequestPublicKey()
 
 void CNet::DoHandshake()
 {
-  if (thread && (task == ntNothing))
+  if (IsThreadAlive() && (task == ntNothing))
   {
     wxMemoryBuffer packet;
     PutString("Handshake", packet); // Do not localize!
@@ -416,7 +445,7 @@ void CNet::DoHandshake()
 
 void CNet::RequestRegistration(const wxString& login, const wxString& password)
 {
-  if (thread && (task == ntNothing) && handshaked)
+  if (IsThreadAlive() && (task == ntNothing) && handshaked)
   {
     wxMemoryBuffer packet;
     PutString("Registration", packet); // Do not localize!
@@ -429,7 +458,7 @@ void CNet::RequestRegistration(const wxString& login, const wxString& password)
 
 void CNet::RequestAuthorization(const wxString& login, const wxString& password)
 {
-  if (thread && (task == ntNothing) && handshaked)
+  if (IsThreadAlive() && (task == ntNothing) && handshaked)
   {
     wxMemoryBuffer packet;
     PutString("Authorization", packet); // Do not localize!

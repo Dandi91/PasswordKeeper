@@ -8,7 +8,7 @@
 
 #include "wxCryptography.h"
 
-#define NET_CLIENT_TIMEOUT  60
+#define NET_CLIENT_TIMEOUT  10
 
 // CCryptoProvider is a helper class that provides cryptographic functions for CNet class
 class CCryptoProvider : public wxRSAEncryption
@@ -42,6 +42,7 @@ enum NetError
   NET_ERROR_VERIFYING_FAILED,
   NET_ERROR_HOST_NOT_SELECTED,
   NET_ERROR_CONNECTING_TO_HOST,
+  NET_ERROR_ALREADY_CONNECTED,
   NET_ERROR_SENDING_FAILED,
   NET_ERROR_RECEIVING_FAILED
 };
@@ -94,12 +95,13 @@ private:
   unsigned short service;
   wxCriticalSection dataCS;
   wxEvtHandler* mainThreadListener;
+  wxSemaphore* doneSemaphore;
 
   void NotifyError(const NetError error);
   void NotifyMainThread(const NetEvent event, const NetError error);
 
 public:
-  CNetThread(const wxString& host, const unsigned short port, wxEvtHandler* listener);
+  CNetThread(const wxString& host, const unsigned short port, wxEvtHandler* listener, wxSemaphore* semaphore);
   void SendPacket(const wxMemoryBuffer& content);
   void ResendPacket();
   void ReceivePacket(wxMemoryBuffer& content);
@@ -125,12 +127,20 @@ private:
   NetTask task;
   NetError errorCode;
   bool handshaked;
+  bool terminating;
   CCryptoProvider cryptoProvider;
   void OnClientEvent(ClientEvent& event);
   void SendNotification(const NetError code);
-  void CloseThread();
+
+  void StopThread();  // Stop thread, blocking access attempts
+  void CleanThread(); // Cleanup everything, ready for a new connection
 
   void SavePublicKey();
+
+  bool IsThreadAlive()
+  {
+    return !terminating && thread;
+  }
 
   void PutString(const wxString& string, wxMemoryBuffer& packet)
   {
@@ -170,6 +180,7 @@ protected:
   void DoHandshake();
 
   CNetThread* thread;
+  wxSemaphore* doneSemaphore;
 };
 
 #endif // NET_H
