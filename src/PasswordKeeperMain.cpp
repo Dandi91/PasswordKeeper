@@ -889,7 +889,7 @@ void PasswordKeeperFrame::OnMenuMoveSelected(wxCommandEvent& event)
 
 void PasswordKeeperFrame::OnmiDeleteSelected(wxCommandEvent& event)
 {
-  if (wxMessageBox("Are you sure to delete this record(s)?", "Confirmation", wxYES_NO | wxICON_EXCLAMATION) == wxYES)
+  if (wxMessageBox("Are you sure you want to delete this record(s)?", "Confirmation", wxYES_NO | wxICON_EXCLAMATION) == wxYES)
   {
     wxArrayInt selection;
     lbList->GetSelections(selection);
@@ -907,7 +907,26 @@ void PasswordKeeperFrame::OnmiCopyNameSelected(wxCommandEvent& event)
 
 void PasswordKeeperFrame::OnmiCopyLoginSelected(wxCommandEvent& event)
 {
-  PutStringToClipboard(CurrentList()->GetRecord(CurrentLine()).login, "Login");
+  CRecord currentRecord = CurrentList()->GetRecord(CurrentLine());
+  if (!currentRecord.login.IsEmpty())
+  {
+    PutStringToClipboard(currentRecord.login, "Login");
+    return;
+  }
+  else
+  {
+    if (!currentRecord.email.IsEmpty())
+    {
+      PutStringToClipboard(currentRecord.email, "Email");
+      return;
+    }
+    else
+    {
+      PutStringToClipboard(currentRecord.name, "Record's name");
+      return;
+    }
+  }
+  // There's nothing that can be copied
 }
 
 void PasswordKeeperFrame::OnmiCopyEmailSelected(wxCommandEvent& event)
