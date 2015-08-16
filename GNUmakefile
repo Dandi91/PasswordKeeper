@@ -8,7 +8,7 @@ LIB = cryptopp
 # Name for the output binary
 BIN = pkeep
 # Features of your wxWidgets installation (toolkit gtk3/gtk2, version 3.0/2.8)
-WXTOOLKIT = gtk3
+WXTOOLKIT = gtk2
 WXVERSION = 3.0
 
 # Builds
