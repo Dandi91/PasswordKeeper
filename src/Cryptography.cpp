@@ -78,7 +78,7 @@ void XORDigestIV(const u_char* source, u_char* dest)
     *dest++ = *src1++ ^ *src2++;
 }
 
-void CRCSum(const u_char* buffer, const size_t length, unsigned long* lvalue)
+void CRCSum(const u_char* buffer, const size_t length, uint32_t* lvalue)
 {
   CryptoPP::CRC32().CalculateDigest((byte*)lvalue, buffer, length);
 }

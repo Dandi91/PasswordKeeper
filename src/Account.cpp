@@ -126,7 +126,7 @@ bool CAccount::ReadFile()
 
   // prepare buffers
   finput.SeekI(0, wxFromEnd);
-  size_t len = finput.TellI();
+  uint32_t len = finput.TellI();
   wxMemoryBuffer buff(len);
   wxMemoryBuffer decrBuff(len);
 
@@ -141,10 +141,10 @@ bool CAccount::ReadFile()
   AESEncrypt(decrBuff, buff, len, fPasswordHash, iv);
 
   // CRC
-  unsigned long fileCRC32, calcCRC32 = 0;
+  uint32_t fileCRC32, calcCRC32 = 0;
   len -= sizeof(fileCRC32);
   char* CRC32position = (char*)decrBuff.GetData() + len;
-  fileCRC32 = *(unsigned long*)CRC32position;
+  fileCRC32 = *(uint32_t*)CRC32position;
   decrBuff.SetDataLen(len);
   CRCSum(decrBuff, &calcCRC32);
   if (calcCRC32 != fileCRC32)
@@ -169,10 +169,10 @@ bool CAccount::WriteFile()
   buff.AppendData(stream.GetOutputStreamBuffer()->GetBufferStart(), stream.GetLength());
 
   // CRC
-  unsigned long calcCRC32 = 0;
+  uint32_t calcCRC32 = 0;
   CRCSum(buff, &calcCRC32);
   buff.AppendData(&calcCRC32, sizeof(calcCRC32));
-  size_t len = buff.GetDataLen();
+  uint32_t len = buff.GetDataLen();
 
   // encrypt
   wxMemoryBuffer iv;

@@ -12,6 +12,8 @@
 #include <rsa.h>
 #pragma GCC diagnostic pop
 
+#include <cstdint>
+
 // Definition for Windows
 typedef unsigned char u_char;
 
@@ -41,6 +43,6 @@ void XORDigestIV(const u_char* source, u_char* dest);  // Makes 128-bit IV from 
 // Digests
 void SHADigest(const u_char* plane, const size_t length, u_char* digest);
 #define SHAGetLength() (CryptoPP::SHA256::DIGESTSIZE)
-void CRCSum(const u_char* buffer, const size_t length, unsigned long* lvalue);
+void CRCSum(const u_char* buffer, const size_t length, uint32_t* lvalue);
 
 #endif // CRYPTOGRAPHY_H

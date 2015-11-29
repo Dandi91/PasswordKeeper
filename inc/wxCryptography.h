@@ -5,6 +5,7 @@
 
 #include <wx/string.h>
 #include <wx/buffer.h>
+#include <cstdint>
 
 class wxRSAEncryption: public CRSAEncryption
 {
@@ -17,6 +18,6 @@ public:
 void AESEncrypt(wxMemoryBuffer& dest, const wxMemoryBuffer& source, const size_t length, const wxMemoryBuffer& key, const wxMemoryBuffer& iv);
 void XORDigestIV(wxMemoryBuffer& buffer);
 void SHADigest(const wxString& plane, wxMemoryBuffer& digest);
-void CRCSum(const wxMemoryBuffer& buffer, unsigned long* lvalue);
+void CRCSum(const wxMemoryBuffer& buffer, uint32_t* lvalue);
 
 #endif // WXCRYPTOGRAPHY_H

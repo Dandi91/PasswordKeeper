@@ -31,7 +31,7 @@ void SHADigest(const wxString& plane, wxMemoryBuffer& digest)
   SHADigest(plane.c_str(), plane.length(), (u_char*)digest.GetAppendBuf(SHAGetLength()));
 }
 
-void CRCSum(const wxMemoryBuffer& buffer, unsigned long* lvalue)
+void CRCSum(const wxMemoryBuffer& buffer, uint32_t* lvalue)
 {
   CRCSum((u_char*)buffer.GetData(), buffer.GetDataLen(), lvalue);
 }

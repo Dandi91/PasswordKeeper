@@ -20,7 +20,7 @@ void CCryptoProvider::GenerateAESValues()
 void CCryptoProvider::Encrypt(wxMemoryBuffer& dest, const wxMemoryBuffer& source)
 {
   // Adding CRC sum before encrypting
-  unsigned long crc = 0;
+  uint32_t crc = 0;
   ::CRCSum(source, &crc);
   wxMemoryBuffer plain;
   plain.AppendData(source.GetData(), source.GetDataLen());
@@ -57,9 +57,9 @@ bool CCryptoProvider::Decrypt(wxMemoryBuffer& dest, const wxMemoryBuffer& source
   ::AESEncrypt(dest, cipherData, packetLen, aesKey, aesIV);
 
   // Separating CRC
-  unsigned long crcTaken, crcCalced = 0, dataLen;
+  uint32_t crcTaken, crcCalced = 0, dataLen;
   dataLen = packetLen - sizeof(crcTaken);
-  crcTaken = *(unsigned long*)((char*)dest.GetData() + dataLen);
+  crcTaken = *(uint32_t*)((char*)dest.GetData() + dataLen);
   dest.SetDataLen(dataLen);
 
   // CRC verifying
@@ -71,7 +71,7 @@ void CCryptoProvider::GenerateHandshake(wxMemoryBuffer& buffer)
 {
   wxMemoryBuffer plain;
   // Key
-  unsigned long size = AES256_KEY_SIZE;
+  uint32_t size = AES256_KEY_SIZE;
   plain.AppendData(&size, sizeof(size));
   plain.AppendData(aesKey.GetData(), aesKey.GetDataLen());
   // iv

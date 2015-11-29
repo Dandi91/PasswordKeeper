@@ -1,17 +1,18 @@
 #include "Content.h"
+#include <cstdint>
 
 void SerializeString(wxMemoryOutputStream& stream, const wxString& field)
 {
   wxScopedCharBuffer charbuff;
   charbuff = field.ToUTF8();
-  size_t length = charbuff.length();
+  int32_t length = charbuff.length();
   stream.Write(&length, sizeof(length));
   stream.Write(charbuff, length);
 }
 
 void UnserializeString(wxMemoryInputStream& stream, wxString& field)
 {
-  size_t fieldLength;
+  int32_t fieldLength;
   stream.Read(&fieldLength, sizeof(fieldLength));
   field = wxString::FromUTF8((char*)stream.GetInputStreamBuffer()->GetBufferPos(), fieldLength);
   stream.SeekI(fieldLength, wxFromCurrent);
@@ -153,7 +154,7 @@ void CRecordList::Serialize(wxMemoryOutputStream& stream) const
   // Write section's name
   SerializeString(stream, fName);
   // Write records
-  size_t recordCount = array.size();
+  int32_t recordCount = array.size();
   stream.Write(&recordCount, sizeof(recordCount));
   for (auto i = array.cbegin(); i != array.end(); ++i)
   {
@@ -169,7 +170,7 @@ void CRecordList::Unserialize(wxMemoryInputStream& stream)
   // Retrieve section's name
   UnserializeString(stream, fName);
   // Retrieve records
-  size_t recordCount;
+  int32_t recordCount;
   stream.Read(&recordCount, sizeof(recordCount));
   while (recordCount > 0)
   {
@@ -257,7 +258,7 @@ void CContent::Move(const size_t index, const size_t to)
 
 void CContent::Serialize(wxMemoryOutputStream& stream) const
 {
-  size_t sectionCount = GetCount();
+  int32_t sectionCount = GetCount();
   stream.Write(&sectionCount, sizeof(sectionCount));
   for (auto i = array.cbegin(); i != array.end(); ++i)
     (*i)->Serialize(stream);
@@ -268,7 +269,7 @@ void CContent::Unserialize(wxMemoryInputStream& stream)
   stream.SeekI(0);
   Clear();
 
-  size_t sectionCount;
+  int32_t sectionCount;
   stream.Read(&sectionCount, sizeof(sectionCount));
   while (sectionCount-- > 0)
   {
