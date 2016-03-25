@@ -36,19 +36,19 @@ PropDialog::PropDialog(wxWindow* parent,wxWindowID id)
 	fgSizer = new wxFlexGridSizer(0, 2, 0, 0);
 	StaticText1 = new wxStaticText(this, wxID_ANY, _("Name"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(StaticText1, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-	edName = new wxTextCtrl(this, ID_EDNAME, _("Text"), wxDefaultPosition, wxSize(321,26), 0, wxDefaultValidator, _T("ID_EDNAME"));
+	edName = new wxTextCtrl(this, ID_EDNAME, _("Text"), wxDefaultPosition, wxSize(321,30), 0, wxDefaultValidator, _T("ID_EDNAME"));
 	fgSizer->Add(edName, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticText2 = new wxStaticText(this, wxID_ANY, _("Login"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(StaticText2, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-	edLogin = new wxTextCtrl(this, ID_EDLOGIN, _("Text"), wxDefaultPosition, wxSize(321,26), 0, wxDefaultValidator, _T("ID_EDLOGIN"));
+	edLogin = new wxTextCtrl(this, ID_EDLOGIN, _("Text"), wxDefaultPosition, wxSize(321,30), 0, wxDefaultValidator, _T("ID_EDLOGIN"));
 	fgSizer->Add(edLogin, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticText3 = new wxStaticText(this, wxID_ANY, _("Email"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(StaticText3, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-	edEmail = new wxTextCtrl(this, ID_EDEMAIL, _("Text"), wxDefaultPosition, wxSize(321,26), 0, wxDefaultValidator, _T("ID_EDEMAIL"));
+	edEmail = new wxTextCtrl(this, ID_EDEMAIL, _("Text"), wxDefaultPosition, wxSize(321,30), 0, wxDefaultValidator, _T("ID_EDEMAIL"));
 	fgSizer->Add(edEmail, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticText4 = new wxStaticText(this, wxID_ANY, _("Password"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(StaticText4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	edPass = new wxTextCtrl(this, ID_EDPASS, _("Text"), wxDefaultPosition, wxSize(321,26), wxTE_PASSWORD, wxDefaultValidator, _T("ID_EDPASS"));
+	edPass = new wxTextCtrl(this, ID_EDPASS, _("Text"), wxDefaultPosition, wxSize(321,30), wxTE_PASSWORD, wxDefaultValidator, _T("ID_EDPASS"));
 	fgSizer->Add(edPass, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FormSizer->Add(fgSizer, wxGBPosition(0, 0), wxDefaultSpan, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
@@ -96,7 +96,7 @@ const int PropDialog::ShowModalEx(CRecord& rec, const ShowMode mode)
     // Switch edPass to standart, no-password field
     RemoveChild(edPass);
     wxDELETE(edPass);
-    edPass = new wxTextCtrl(this, ID_EDPASS, rec.password, wxDefaultPosition, wxSize(321,26), 0, wxDefaultValidator, "ID_EDPASS");
+    edPass = new wxTextCtrl(this, ID_EDPASS, rec.password, wxDefaultPosition, wxSize(321,30), 0, wxDefaultValidator, "ID_EDPASS");
     fgSizer->Insert(7, edPass, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     edPass->SetEditable(false);
     AddButtonToSizer(wxID_OK, false);
