@@ -36,18 +36,18 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	lbLogin = new wxStaticText(this, wxID_ANY, _("Login"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(lbLogin, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	edLogin = new wxTextCtrl(this, ID_EDLOGIN, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, wxDefaultValidator, _T("ID_EDLOGIN"));
-	fgSizer->Add(edLogin, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	fgSizer->Add(edLogin, 1, wxALL|wxEXPAND, 5);
 	lbPassword = new wxStaticText(this, wxID_ANY, _("Password"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(lbPassword, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	edPassword = new wxTextCtrl(this, ID_EDPASS, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER|wxTE_PASSWORD, wxDefaultValidator, _T("ID_EDPASS"));
-	fgSizer->Add(edPassword, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	fgSizer->Add(edPassword, 1, wxALL|wxEXPAND, 5);
 	fgSizer->Add(-1,-1,1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	bsButtons = new wxBoxSizer(wxHORIZONTAL);
 	btNew = new wxButton(this, ID_BTNEW, _("New account..."), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BTNEW"));
 	bsButtons->Add(btNew, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	sbStdButtons = new wxStdDialogButtonSizer();
 	sbStdButtons->Realize();
-	bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
+	bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5);
 	fgSizer->Add(bsButtons, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
 	BoxSizer1->Add(fgSizer, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	SetSizer(BoxSizer1);
@@ -139,14 +139,14 @@ void AuthDialog::ChangeViewNewAccount(const bool state)
     edPasswordSec = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, size, wxTE_PROCESS_ENTER | wxTE_PASSWORD, wxDefaultValidator, "wxID_ANY");
     newLabel = new wxStaticText(this, wxID_ANY, "Repeat password", wxDefaultPosition, wxDefaultSize, 0, "wxID_ANY");
     fgSizer->Insert(4, newLabel, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-    fgSizer->Insert(5, edPasswordSec, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    fgSizer->Insert(5, edPasswordSec, 1, wxALL|wxEXPAND, 5);
     // Hide standard buttons
     bsButtons->Hide(sbStdButtons);
     bsButtons->Detach(sbStdButtons);
     // Add "Back" button
     btBack = new wxButton(this, ID_BTBACK, "Back", wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, "ID_BTBACK");
     btBack->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnBack, this);
-    bsButtons->Add(btBack, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    bsButtons->Add(btBack, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5);
     // Resize
     fgSizer->Fit(this);
     fgSizer->SetSizeHints(this);
@@ -166,7 +166,7 @@ void AuthDialog::ChangeViewNewAccount(const bool state)
     wxDELETE(edPasswordSec);
     wxDELETE(newLabel);
     // Show standard buttons
-    bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5);
     bsButtons->Show(sbStdButtons);
     // Remove "Back" button
     bsButtons->Detach(btBack);

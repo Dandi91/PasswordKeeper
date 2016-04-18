@@ -153,7 +153,7 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
     tbTabs = new wxNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxSize(463,300), wxWANTS_CHARS, _T("ID_NOTEBOOK"));
-    BoxSizer1->Add(tbTabs, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    BoxSizer1->Add(tbTabs, 1, wxALL|wxEXPAND, 5);
     SetSizer(BoxSizer1);
     meMainMenu = new wxMenuBar();
     miAccount = new wxMenu();
@@ -470,7 +470,7 @@ wxWindow* PasswordKeeperFrame::GetTabPage()
   wxPanel* pnPanel = new wxPanel(tbTabs, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, wxEmptyString);
   wxBoxSizer* BoxSizer = new wxBoxSizer(wxHORIZONTAL);
   wxListBox* lbTempList = new wxListBox(pnPanel, ID_LIST, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE|wxLB_NEEDED_SB, wxDefaultValidator, wxListBoxNameStr);
-  BoxSizer->Add(lbTempList, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 8);
+  BoxSizer->Add(lbTempList, 1, wxALL|wxEXPAND, 8);
   pnPanel->SetSizer(BoxSizer);
   BoxSizer->Fit(pnPanel);
   BoxSizer->SetSizeHints(pnPanel);
