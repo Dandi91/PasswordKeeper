@@ -50,6 +50,7 @@ class AuthDialog: public wxDialog
 		wxTextCtrl* edPasswordSec;
 		wxStaticText* newLabel;
 		wxButton* btBack;
+		wxButton* btRelocate;
 
 	protected:
 
@@ -60,6 +61,7 @@ class AuthDialog: public wxDialog
 		//*)
 
 		static const long ID_BTBACK;
+		static const long ID_BTRELOCATE;
 
 	private:
 
@@ -74,6 +76,7 @@ class AuthDialog: public wxDialog
 		DECLARE_EVENT_TABLE()
 
 		void OnModalClose(wxCommandEvent& event);
+		void OnRelocate(wxCommandEvent& event);
 		void OnBack(wxCommandEvent& event);
 		bool CheckBeforeClose();
 		void ChangeViewNewAccount(const bool state);

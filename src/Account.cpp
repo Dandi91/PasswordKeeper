@@ -1,4 +1,5 @@
 #include "Account.h"
+#include "Saver.h"
 
 #include "wxCryptography.h"
 
@@ -25,7 +26,7 @@ const int CAccount::Authorize(const wxString& login, const wxString& password, c
     if (Deauthorize() != AC_ERROR_SUCCESS)
       return fErrorCode;
   fErrorCode = AC_ERROR_SUCCESS;
-  wxString dataDir = wxStandardPaths::Get().GetUserDataDir();
+  wxString dataDir = CSaver::Get().Read("AccountDirectory", wxStandardPaths::Get().GetUserDataDir());
   wxFileName fileName(dataDir, login, "pkf");
   if (createNew)
   {
