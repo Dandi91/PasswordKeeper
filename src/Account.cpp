@@ -119,7 +119,7 @@ bool CAccount::ReadFile()
   CCryptoWrap::AES256CTREncrypt(decrBuff, buff, len, fPasswordHash, iv);
 
   // CRC
-  unsigned long fileCRC32, calcCRC32 = 0;
+  uint32_t fileCRC32, calcCRC32 = 0;
   len -= sizeof(fileCRC32);
   char* CRC32position = (char*)decrBuff.GetData() + len;
   fileCRC32 = *(unsigned long*)CRC32position;
@@ -147,7 +147,7 @@ bool CAccount::WriteFile()
   buff.AppendData(stream.GetOutputStreamBuffer()->GetBufferStart(), stream.GetLength());
 
   // CRC
-  unsigned long calcCRC32 = 0;
+  uint32_t calcCRC32 = 0;
   CCryptoWrap::CRC32Sum(buff, &calcCRC32);
   buff.AppendData(&calcCRC32, sizeof(calcCRC32));
   size_t len = buff.GetDataLen();

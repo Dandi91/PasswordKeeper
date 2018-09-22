@@ -30,7 +30,7 @@ void CCryptoWrap::XORDigestIV(wxMemoryBuffer& buffer)
   buffer.SetDataLen(AES256_IV_SIZE);
 }
 
-void CCryptoWrap::CRC32Sum(const wxMemoryBuffer& buffer, unsigned long* lvalue)
+void CCryptoWrap::CRC32Sum(const wxMemoryBuffer& buffer, uint32_t* lvalue)
 {
   CryptoPP::CRC32().CalculateDigest((byte *)lvalue, (byte *)buffer.GetData(), buffer.GetDataLen());
 }
