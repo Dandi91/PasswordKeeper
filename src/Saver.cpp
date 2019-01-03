@@ -6,7 +6,7 @@ void CSaver::EnsureDirExistance()
 {
   wxString dataDir = wxStandardPaths::Get().GetUserDataDir();
   if (!wxDirExists(dataDir))
-    wxMkDir(dataDir, S_IRUSR | S_IWUSR | S_IEXEC);  // -rwx------
+    wxMkDir(dataDir, wxS_IRUSR | wxS_IWUSR | wxS_IXUSR);  // -rwx------
 }
 
 CSaver& CSaver::Get()

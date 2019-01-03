@@ -118,7 +118,11 @@ void PutStringToClipboard(const wxString& string, const wxString& stringName)
 
 CRecordList* PasswordKeeperFrame::CurrentList()
 {
-  return account->GetContent()->GetList(tbTabs->GetSelection());
+  int selection = tbTabs->GetSelection();
+  if (selection > -1 && selection < account->GetContent()->GetCount())
+    return account->GetContent()->GetList(selection);
+  else
+    return nullptr;
 }
 
 const int PasswordKeeperFrame::CurrentLine(int* selCount = NULL)
@@ -152,7 +156,7 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
     tbTabs = new wxNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxSize(463,300), wxWANTS_CHARS, _T("ID_NOTEBOOK"));
-    BoxSizer1->Add(tbTabs, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    BoxSizer1->Add(tbTabs, 1, wxALL|wxEXPAND, 5);
     SetSizer(BoxSizer1);
     meMainMenu = new wxMenuBar();
     miAccount = new wxMenu();
@@ -462,7 +466,7 @@ wxWindow* PasswordKeeperFrame::GetTabPage()
   wxPanel* pnPanel = new wxPanel(tbTabs, ID_PANEL, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, wxEmptyString);
   wxBoxSizer* BoxSizer = new wxBoxSizer(wxHORIZONTAL);
   wxListBox* lbTempList = new wxListBox(pnPanel, ID_LIST, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_MULTIPLE|wxLB_NEEDED_SB, wxDefaultValidator, wxListBoxNameStr);
-  BoxSizer->Add(lbTempList, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 8);
+  BoxSizer->Add(lbTempList, 1, wxALL|wxEXPAND, 8);
   pnPanel->SetSizer(BoxSizer);
   BoxSizer->Fit(pnPanel);
   BoxSizer->SetSizeHints(pnPanel);
@@ -769,6 +773,7 @@ void PasswordKeeperFrame::OnmiAddTabSelected(wxCommandEvent& event)
     UpdateTabs();
     tbTabs->SetSelection(tbTabs->GetPageCount() - 1);
     account->SetSaved(false);
+    lbList = (wxListBox*)tbTabs->GetCurrentPage()->FindWindow(ID_LIST);
     UpdateInterface();
   }
 }
@@ -835,20 +840,26 @@ void PasswordKeeperFrame::OnMenuMoveSelected(wxCommandEvent& event)
   wxArrayInt selection;
   lbList->GetSelections(selection);
   CRecordList* currList = CurrentList();
-  char num = mpMove->FindChildItem(event.GetId())->GetItemLabelText()[0];
-  if (num == 'N')
-  {
-    OnmiAddTabSelected(event);
-    num = account->GetContent()->GetCount() - 1;
+  wxMenuItem* item = mpMove->FindChildItem(event.GetId());
+  if (item == nullptr)
+    // if item is not in mpMove (popup menu) it might be in miMove (main menu)
+    item = miMove->FindChildItem(event.GetId());
+  if (item) {
+    char num = item->GetItemLabelText()[0];
+    if (num == 'N')
+    {
+      OnmiAddTabSelected(event);
+      num = account->GetContent()->GetCount() - 1;
+    }
+    else
+      num -= '1';
+    for (int i = selection.size() - 1; i > -1; --i)
+    {
+      account->GetContent()->GetList(num)->Add(currList->GetRecord(selection[i]));
+      currList->Delete(selection[i]);
+    }
+    UpdateInterface();
   }
-  else
-    num -= '1';
-  for (int i = selection.size() - 1; i > -1; --i)
-  {
-    account->GetContent()->GetList(num)->Add(currList->GetRecord(selection[i]));
-    currList->Delete(selection[i]);
-  }
-  UpdateInterface();
 }
 
 void PasswordKeeperFrame::OnmiDeleteSelected(wxCommandEvent& event)

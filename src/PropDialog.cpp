@@ -56,8 +56,8 @@ PropDialog::PropDialog(wxWindow* parent,wxWindowID id)
 	BoxSizer1->Add(btGenerate, 1, wxALL|wxSHAPED|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	dbSizer = new wxStdDialogButtonSizer();
 	dbSizer->Realize();
-	BoxSizer1->Add(dbSizer, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
-	FormSizer->Add(BoxSizer1, wxGBPosition(1, 0), wxDefaultSpan, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	BoxSizer1->Add(dbSizer, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5);
+	FormSizer->Add(BoxSizer1, wxGBPosition(1, 0), wxDefaultSpan, wxALL|wxEXPAND, 5);
 	SetSizer(FormSizer);
 	SetSizer(FormSizer);
 	Layout();

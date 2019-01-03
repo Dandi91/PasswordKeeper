@@ -33,11 +33,11 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	lbLogin = new wxStaticText(this, wxID_ANY, _("Login"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(lbLogin, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	edLogin = new wxTextCtrl(this, ID_EDLOGIN, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER, wxDefaultValidator, _T("ID_EDLOGIN"));
-	fgSizer->Add(edLogin, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	fgSizer->Add(edLogin, 1, wxALL|wxEXPAND, 5);
 	lbPassword = new wxStaticText(this, wxID_ANY, _("Password"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	fgSizer->Add(lbPassword, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
 	edPassword = new wxTextCtrl(this, ID_EDPASS, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER|wxTE_PASSWORD, wxDefaultValidator, _T("ID_EDPASS"));
-	fgSizer->Add(edPassword, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	fgSizer->Add(edPassword, 1, wxALL|wxEXPAND, 5);
 	fgSizer->Add(-1,-1,1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	bsButtons = new wxBoxSizer(wxHORIZONTAL);
 	btNew = new wxButton(this, ID_BTNEW, _("New account..."), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BTNEW"));
@@ -130,7 +130,7 @@ void AuthDialog::ChangeViewNewAccount(const bool state)
     edPasswordSec = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, size, wxTE_PROCESS_ENTER | wxTE_PASSWORD, wxDefaultValidator, "wxID_ANY");
     newLabel = new wxStaticText(this, wxID_ANY, "Repeat password", wxDefaultPosition, wxDefaultSize, 0, "wxID_ANY");
     fgSizer->Insert(4, newLabel, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
-    fgSizer->Insert(5, edPasswordSec, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    fgSizer->Insert(5, edPasswordSec, 1, wxALL|wxEXPAND, 5);
     // Hide standart buttons
     bsButtons->Hide(sbStdButtons);
     bsButtons->Detach(sbStdButtons);

@@ -47,11 +47,11 @@ GenDialog::GenDialog(wxWindow* parent,wxWindowID id)
 	StaticText1 = new wxStaticText(this, wxID_ANY, _("Password"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	TopSizer->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	edPassword = new wxTextCtrl(this, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxSize(272,21), wxTE_PROCESS_ENTER|wxTE_PASSWORD, wxDefaultValidator, _T("ID_TEXTCTRL1"));
-	TopSizer->Add(edPassword, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	TopSizer->Add(edPassword, 1, wxALL|wxEXPAND, 5);
 	cbShow = new wxCheckBox(this, ID_CHECKBOX1, _("Show"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE, wxDefaultValidator, _T("ID_CHECKBOX1"));
 	cbShow->SetValue(false);
 	TopSizer->Add(cbShow, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	FormSizer->Add(TopSizer, 0, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FormSizer->Add(TopSizer, 0, wxALL|wxEXPAND, 5);
 	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Char set"));
 	cbLower = new wxCheckBox(this, ID_CHECKBOX5, _("Lower case"), wxDefaultPosition, wxSize(68,13), wxCHK_2STATE, wxDefaultValidator, _T("ID_CHECKBOX5"));
 	cbLower->SetValue(true);
@@ -65,7 +65,7 @@ GenDialog::GenDialog(wxWindow* parent,wxWindowID id)
 	cbSpecials = new wxCheckBox(this, ID_CHECKBOX4, _("Special chars"), wxDefaultPosition, wxSize(78,13), wxCHK_2STATE, wxDefaultValidator, _T("ID_CHECKBOX4"));
 	cbSpecials->SetValue(true);
 	StaticBoxSizer1->Add(cbSpecials, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	FormSizer->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FormSizer->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND, 5);
 	StaticBoxSizer2 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Length"));
 	FlexGridSizer3 = new wxFlexGridSizer(0, 3, 0, 0);
 	StaticText2 = new wxStaticText(this, wxID_ANY, _("Minimal"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
@@ -79,7 +79,7 @@ GenDialog::GenDialog(wxWindow* parent,wxWindowID id)
 	edMaxLength = new wxTextCtrl(this, ID_TEXTCTRL3, _("20"), wxDefaultPosition, wxSize(45,21), 0, wxDefaultValidator, _T("ID_TEXTCTRL3"));
 	FlexGridSizer4->Add(edMaxLength, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer2->Add(FlexGridSizer4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-	FormSizer->Add(StaticBoxSizer2, 0, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FormSizer->Add(StaticBoxSizer2, 0, wxALL|wxEXPAND, 5);
 	FlexGridSizer5 = new wxFlexGridSizer(0, 3, 0, 0);
 	btGenerate = new wxButton(this, ID_BUTTON1, _("Generate"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
 	FlexGridSizer5->Add(btGenerate, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -89,7 +89,7 @@ GenDialog::GenDialog(wxWindow* parent,wxWindowID id)
 	StdDialogButtonSizer1->AddButton(new wxButton(this, wxID_CANCEL, wxEmptyString));
 	StdDialogButtonSizer1->Realize();
 	FlexGridSizer5->Add(StdDialogButtonSizer1, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
-	FormSizer->Add(FlexGridSizer5, 0, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FormSizer->Add(FlexGridSizer5, 0, wxALL|wxEXPAND, 5);
 	SetSizer(FormSizer);
 	SetSizer(FormSizer);
 	Layout();
@@ -195,7 +195,7 @@ void GenDialog::PasswordVisibility()
   RemoveChild(edPassword);
   delete edPassword;
   edPassword = new wxTextCtrl(this, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxSize(272,21), cbShow->GetValue() ? 0 : wxTE_PASSWORD, wxDefaultValidator, _T("ID_TEXTCTRL1"));
-  TopSizer->Insert(1, edPassword, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+  TopSizer->Insert(1, edPassword, 1, wxALL|wxEXPAND, 5);
   edPassword->SetValue(temp);
   Layout();
   edPassword->SetFocus();
