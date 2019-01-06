@@ -1,6 +1,7 @@
 #include "Account.h"
+#include "Saver.h"
 
-#include "CryptoWrap.h"
+#include "wxCryptography.h"
 
 #include <wx/wfstream.h>
 #include <wx/stdpaths.h>
@@ -10,6 +11,7 @@ const wxString errorMessages[] = {"OK",
                                    "Unknown login",
                                    "Wrong login/password",
                                    "Writing error",
+                                   "Reading error",
                                    "Unauthorized access prohibited"};
 
 CAccount& CAccount::Get()
@@ -24,7 +26,7 @@ const int CAccount::Authorize(const wxString& login, const wxString& password, c
     if (Deauthorize() != AC_ERROR_SUCCESS)
       return fErrorCode;
   fErrorCode = AC_ERROR_SUCCESS;
-  wxString dataDir = wxStandardPaths::Get().GetUserDataDir();
+  wxString dataDir = CSaver::Get().Read("AccountDirectory", wxStandardPaths::Get().GetUserDataDir());
   wxFileName fileName(dataDir, login, "pkf");
   if (createNew)
   {
@@ -35,7 +37,7 @@ const int CAccount::Authorize(const wxString& login, const wxString& password, c
     }
     fLogin = login;
     fFile = fileName;
-    CCryptoWrap::SHA256Digest(password, fPasswordHash);
+    SHADigest(password, fPasswordHash);
   }
   else
   {
@@ -46,7 +48,7 @@ const int CAccount::Authorize(const wxString& login, const wxString& password, c
     }
     fLogin = login;
     fFile = fileName;
-    CCryptoWrap::SHA256Digest(password, fPasswordHash);
+    SHADigest(password, fPasswordHash);
     fErrorCode = ReadFile() ? AC_ERROR_SUCCESS : AC_ERROR_WRONG_PASSWORD;
   }
   if (IsOk())
@@ -78,7 +80,7 @@ const int CAccount::SetPassword(const wxString& value)
 {
   if (fIsAuthorized)
   {
-    CCryptoWrap::SHA256Digest(value, fPasswordHash);
+    SHADigest(value, fPasswordHash);
     fErrorCode = AC_ERROR_SUCCESS;
   }
   else
@@ -95,6 +97,27 @@ const int CAccount::SaveContent()
   return fErrorCode;
 }
 
+int CAccount::MergeLocally(const wxString& fileName, const wxString& login, const wxString& password, wxString* outputLog)
+{
+  if (fIsAuthorized)
+  {
+    CAccount mergingAccout;
+    mergingAccout.fLogin = login;
+    SHADigest(password, mergingAccout.fPasswordHash);
+    mergingAccout.fFile.Assign(fileName);
+    if (mergingAccout.ReadFile())
+    {
+      fContent.Merge(mergingAccout.fContent, outputLog);
+      fErrorCode = AC_ERROR_SUCCESS;
+    }
+    else
+      fErrorCode = AC_ERROR_WRONG_PASSWORD;
+  }
+  else
+    fErrorCode = AC_ERROR_UNAUTHORIZED;
+  return fErrorCode;
+}
+
 bool CAccount::ReadFile()
 {
   // open file
@@ -104,7 +127,7 @@ bool CAccount::ReadFile()
 
   // prepare buffers
   finput.SeekI(0, wxFromEnd);
-  size_t len = finput.TellI();
+  uint32_t len = finput.TellI();
   wxMemoryBuffer buff(len);
   wxMemoryBuffer decrBuff(len);
 
@@ -114,17 +137,17 @@ bool CAccount::ReadFile()
 
   // decrypt
   wxMemoryBuffer iv;
-  CCryptoWrap::SHA256Digest(fLogin, iv);
-  CCryptoWrap::XORDigestIV(iv);
-  CCryptoWrap::AES256CTREncrypt(decrBuff, buff, len, fPasswordHash, iv);
+  SHADigest(fLogin, iv);
+  XORDigestIV(iv);
+  AESEncrypt(decrBuff, buff, len, fPasswordHash, iv);
 
   // CRC
   uint32_t fileCRC32, calcCRC32 = 0;
   len -= sizeof(fileCRC32);
   char* CRC32position = (char*)decrBuff.GetData() + len;
-  fileCRC32 = *(unsigned long*)CRC32position;
+  fileCRC32 = *(uint32_t*)CRC32position;
   decrBuff.SetDataLen(len);
-  CCryptoWrap::CRC32Sum(decrBuff, &calcCRC32);
+  CRCSum(decrBuff, &calcCRC32);
   if (calcCRC32 != fileCRC32)
     return false;
 
@@ -148,16 +171,16 @@ bool CAccount::WriteFile()
 
   // CRC
   uint32_t calcCRC32 = 0;
-  CCryptoWrap::CRC32Sum(buff, &calcCRC32);
+  CRCSum(buff, &calcCRC32);
   buff.AppendData(&calcCRC32, sizeof(calcCRC32));
-  size_t len = buff.GetDataLen();
+  uint32_t len = buff.GetDataLen();
 
   // encrypt
   wxMemoryBuffer iv;
   wxMemoryBuffer encrBuff(len);
-  CCryptoWrap::SHA256Digest(fLogin, iv);
-  CCryptoWrap::XORDigestIV(iv);
-  CCryptoWrap::AES256CTREncrypt(encrBuff, buff, len, fPasswordHash, iv);
+  SHADigest(fLogin, iv);
+  XORDigestIV(iv);
+  AESEncrypt(encrBuff, buff, len, fPasswordHash, iv);
 
   // open file
   wxFileOutputStream foutput(fFile.GetFullPath());

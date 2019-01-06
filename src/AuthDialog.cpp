@@ -13,8 +13,11 @@ const long AuthDialog::ID_BTNEW = wxNewId();
 //*)
 
 const long AuthDialog::ID_BTBACK = wxNewId();
+const long AuthDialog::ID_BTRELOCATE = wxNewId();
 
 #include <wx/msgdlg.h>
+#include <wx/dirdlg.h>
+#include <wx/stdpaths.h>
 
 BEGIN_EVENT_TABLE(AuthDialog,wxDialog)
 	//(*EventTable(AuthDialog)
@@ -44,7 +47,7 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	bsButtons->Add(btNew, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	sbStdButtons = new wxStdDialogButtonSizer();
 	sbStdButtons->Realize();
-	bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5);
 	fgSizer->Add(bsButtons, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
 	BoxSizer1->Add(fgSizer, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	SetSizer(BoxSizer1);
@@ -57,6 +60,11 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
 	Connect(ID_BTNEW,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&AuthDialog::OnbtNewClick);
 	//*)
 
+
+  btRelocate = new wxButton(this, ID_BTRELOCATE, "Relocate...", wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BTRELOCATE"));
+  btRelocate->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnRelocate, this);
+  bsButtons->Insert(0, btRelocate, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+
   wxButton* newButton = new wxButton(this, wxID_OK);
   newButton->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnModalClose, this);
   sbStdButtons->AddButton(newButton);
@@ -67,11 +75,11 @@ AuthDialog::AuthDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const w
   wxSize windowSize = edLogin->GetSize();
   editorsSize = windowSize.GetWidth();
 
-	edPasswordSec = NULL;
-	behavior = false;
+  edPasswordSec = NULL;
+  behavior = dbLogin;
 
-	wxString accountName;
-	CSaver::Get().Read("Account", &accountName);
+  wxString accountName;
+  CSaver::Get().Read("Account", &accountName);
   edLogin->SetValue(accountName);
 
 #if defined(__WXGTK__) || defined(__WXMOTIF__)
@@ -105,7 +113,8 @@ bool AuthDialog::CheckBeforeClose()
       wxMessageBox("Passwords are not equal", "Error", wxOK | wxICON_ERROR);
       return false;
     }
-  CSaver::Get().Write("Account", edLogin->GetValue());
+  if (behavior == dbLogin)
+    CSaver::Get().Write("Account", edLogin->GetValue());
   return true;
 }
 
@@ -131,13 +140,13 @@ void AuthDialog::ChangeViewNewAccount(const bool state)
     newLabel = new wxStaticText(this, wxID_ANY, "Repeat password", wxDefaultPosition, wxDefaultSize, 0, "wxID_ANY");
     fgSizer->Insert(4, newLabel, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 5);
     fgSizer->Insert(5, edPasswordSec, 1, wxALL|wxEXPAND, 5);
-    // Hide standart buttons
+    // Hide standard buttons
     bsButtons->Hide(sbStdButtons);
     bsButtons->Detach(sbStdButtons);
     // Add "Back" button
     btBack = new wxButton(this, ID_BTBACK, "Back", wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, "ID_BTBACK");
     btBack->Bind(wxEVT_BUTTON, (wxObjectEventFunction)&AuthDialog::OnBack, this);
-    bsButtons->Add(btBack, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    bsButtons->Add(btBack, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5);
     // Resize
     fgSizer->Fit(this);
     fgSizer->SetSizeHints(this);
@@ -156,8 +165,8 @@ void AuthDialog::ChangeViewNewAccount(const bool state)
     RemoveChild(newLabel);
     wxDELETE(edPasswordSec);
     wxDELETE(newLabel);
-    // Show standart buttons
-    bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    // Show standard buttons
+    bsButtons->Add(sbStdButtons, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5);
     bsButtons->Show(sbStdButtons);
     // Remove "Back" button
     bsButtons->Detach(btBack);
@@ -174,15 +183,48 @@ void AuthDialog::ChangeBehavior()
   ChangeViewNewAccount(true);
   SetLabel("Change Account Settings");
   btBack->SetLabel("Cancel");
-  behavior = true;
+  behavior = dbChange;
+}
+
+void AuthDialog::MergeBehavior(const wxString& fileName)
+{
+  SetLabel("Account Settings for \"" + fileName + "\"");
+  edLogin->Clear();
+  btNew->Hide();
+  btRelocate->Hide();
+  fgSizer->Fit(this);
+  fgSizer->SetSizeHints(this);
+  behavior = dbMerge;
 }
 
 void AuthDialog::OnBack(wxCommandEvent& event)
 {
-  if (!behavior)
-    ChangeViewNewAccount(false);
-  else
-    EndModal(wxID_CANCEL);
+  switch (behavior)
+  {
+    case dbChange:
+    case dbMerge:
+      EndModal(wxID_CANCEL);
+      break;
+    case dbLogin:
+      ChangeViewNewAccount(false);
+      break;
+  }
+}
+
+void AuthDialog::OnRelocate(wxCommandEvent& event)
+{
+  wxDirDialog dirDialog(this, "Select directory with accounts", CSaver::Get().Read("AccountDirectory", wxStandardPaths::Get().GetUserDataDir()));
+  if (dirDialog.ShowModal() == wxID_OK)
+  {
+    wxString dir = dirDialog.GetPath();
+    if (wxDirExists(dir))
+    {
+      CSaver::Get().Write("AccountDirectory", dir);
+      CSaver::Get().Flush();
+    }
+    else
+      wxMessageBox("Selected directory does not exist. Return to the default setting.", "Error", wxOK | wxICON_ERROR);
+  }
 }
 
 void AuthDialog::OnbtNewClick(wxCommandEvent& event)

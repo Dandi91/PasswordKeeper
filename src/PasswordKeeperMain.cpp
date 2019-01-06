@@ -67,6 +67,7 @@ const long PasswordKeeperFrame::idMenuSwitch = wxNewId();
 const long PasswordKeeperFrame::idMenuSynchronize = wxNewId();
 const long PasswordKeeperFrame::idMenuChange = wxNewId();
 const long PasswordKeeperFrame::idMenuSave = wxNewId();
+const long PasswordKeeperFrame::idMenuMerge = wxNewId();
 const long PasswordKeeperFrame::idMenuQuit = wxNewId();
 const long PasswordKeeperFrame::idMenuTabAdd = wxNewId();
 const long PasswordKeeperFrame::idMenuTabRename = wxNewId();
@@ -119,7 +120,7 @@ void PutStringToClipboard(const wxString& string, const wxString& stringName)
 CRecordList* PasswordKeeperFrame::CurrentList()
 {
   int selection = tbTabs->GetSelection();
-  if (selection > -1 && selection < account->GetContent()->GetCount())
+  if (selection > -1 && selection < int(account->GetContent()->GetCount()))
     return account->GetContent()->GetList(selection);
   else
     return nullptr;
@@ -166,8 +167,11 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     miAccount->Append(miSync);
     miChange = new wxMenuItem(miAccount, idMenuChange, _("&Change login/password"), _("Change login or password for this account"), wxITEM_NORMAL);
     miAccount->Append(miChange);
+    miAccount->AppendSeparator();
     miSave = new wxMenuItem(miAccount, idMenuSave, _("&Save locally\tCtrl+S"), _("Save to local file"), wxITEM_NORMAL);
     miAccount->Append(miSave);
+    miMerge = new wxMenuItem(miAccount, idMenuMerge, _("&Merge \tCtrl+M"), _("Merge current account with a local file"), wxITEM_NORMAL);
+    miAccount->Append(miMerge);
     miAccount->AppendSeparator();
     miQuit = new wxMenuItem(miAccount, idMenuQuit, _("Quit\tAlt-F4"), _("Quit the application"), wxITEM_NORMAL);
     miAccount->Append(miQuit);
@@ -250,6 +254,7 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     Connect(idMenuSwitch,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiSwitchSelected);
     Connect(idMenuSynchronize,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiSyncSelected);
     Connect(idMenuSave,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiSaveSelected);
+    Connect(idMenuMerge,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiMergeSelected);
     Connect(idMenuQuit,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiQuitSelected);
     Connect(idMenuTabAdd,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiAddTabSelected);
     Connect(idMenuTabRename,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&PasswordKeeperFrame::OnmiRenameTabSelected);
@@ -312,8 +317,6 @@ PasswordKeeperFrame::PasswordKeeperFrame(wxWindow* parent,wxWindowID id)
     #endif // __WXGTK__ || __WXMOTIF__
 
     UpdateTabs();
-    if (tbTabs->GetSelection() > -1)
-      lbList = (wxListBox*)tbTabs->GetCurrentPage()->FindWindow(ID_LIST);
     UpdateInterface();
 }
 
@@ -384,6 +387,7 @@ void PasswordKeeperFrame::UpdateMenus()
   // Account menu
   miSync->Enable(account->IsAuthorized());
   miChange->Enable(account->IsAuthorized());
+  miMerge->Enable(account->IsAuthorized());
   miSave->Enable(!account->IsSaved());
   // Tab menu
   meMainMenu->EnableTop(1, account->IsAuthorized());
@@ -457,6 +461,10 @@ void PasswordKeeperFrame::UpdateTabs(const bool renameOnly)
   {
     for (size_t i = 0; i < tbTabs->GetPageCount(); ++i)
       tbTabs->SetPageText(i, account->GetContent()->GetList(i)->GetName());
+  }
+  if (!renameOnly and (tbTabs->GetSelection() > -1))
+  {
+    lbList = (wxListBox*)tbTabs->GetCurrentPage()->FindWindow(ID_LIST);
   }
 }
 
@@ -637,6 +645,7 @@ void PasswordKeeperFrame::OnListRightClick(wxMouseEvent& event)
 void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
 {
   int selection = -1, keyCode = event.GetKeyCode();
+  int prevSel;
   if ((event.GetModifiers() == wxMOD_NONE) && (lbList))
   {
     if (((keyCode == WXK_RETURN) || (keyCode == WXK_NUMPAD_ENTER))  && (CurrentLine() != wxNOT_FOUND))
@@ -646,7 +655,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
     }
     if ((keyCode == WXK_LEFT) || (keyCode == WXK_RIGHT))
     {
-      selection = tbTabs->GetSelection();
+      prevSel = selection = tbTabs->GetSelection();
       if (keyCode == WXK_LEFT)
         --selection;
       if (keyCode == WXK_RIGHT)
@@ -656,6 +665,8 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
       if ((unsigned int)selection > tbTabs->GetPageCount() - 1)
         selection = tbTabs->GetPageCount() - 1;
       tbTabs->SetSelection(selection);
+      if (prevSel != selection)
+        UpdateMenus();
       return;
     }
     if ((keyCode == WXK_UP) || (keyCode == WXK_DOWN))
@@ -666,7 +677,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
       {
         if (selections.Count() == 1)
         {
-          selection = selections[0];
+          prevSel = selection = selections[0];
           if (keyCode == WXK_UP)
             --selection;
           if (keyCode == WXK_DOWN)
@@ -678,6 +689,7 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
         }
         else if (selections.Count() == 0)
         {
+          prevSel = -1;
           if (keyCode == WXK_UP)
             selection = lbList->GetCount() - 1;
           if (keyCode == WXK_DOWN)
@@ -685,6 +697,8 @@ void PasswordKeeperFrame::OnListKeyPressed(wxKeyEvent& event)
         }
         lbList->DeselectAll();
         lbList->SetSelection(selection, true);
+        if (prevSel != selection)
+          UpdateMenus();
       }
       return;
     }
@@ -744,6 +758,28 @@ void PasswordKeeperFrame::OnmiChangeSelected(wxCommandEvent& event)
 
     }
   }*/
+}
+
+void PasswordKeeperFrame::OnmiMergeSelected(wxCommandEvent& event)
+{
+  wxFileDialog openFileDialog(this, _("Open a merging file"), "", "", "PKF files (*.pkf)|*.pkf", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+  if (openFileDialog.ShowModal() != wxID_OK)
+    return;
+  AuthDialog dlg(this);
+  dlg.MergeBehavior(openFileDialog.GetFilename());
+  if (dlg.ShowModal() != wxID_OK)
+    return;
+  wxString log;
+  account->MergeLocally(openFileDialog.GetPath(), dlg.edLogin->GetValue(), dlg.edPassword->GetValue(), &log);
+  if (!account->IsOk())
+    wxMessageBox(account->GetErrorMessage(), "Error", wxOK | wxICON_ERROR);
+  else
+  {
+    UpdateTabs();
+    UpdateInterface();
+    wxMessageBox("Merging with \"" + openFileDialog.GetFilename() + "\" has been completed successfully.\n" +
+                 "You may need to check your account and the log below for duplicating records.\n\n" + log, "Information", wxOK | wxICON_INFORMATION);
+  }
 }
 
 void PasswordKeeperFrame::OnmiSaveSelected(wxCommandEvent& event)
@@ -864,7 +900,7 @@ void PasswordKeeperFrame::OnMenuMoveSelected(wxCommandEvent& event)
 
 void PasswordKeeperFrame::OnmiDeleteSelected(wxCommandEvent& event)
 {
-  if (wxMessageBox("Are you sure to delete this record(s)?", "Confirmation", wxYES_NO | wxICON_EXCLAMATION) == wxYES)
+  if (wxMessageBox("Are you sure you want to delete this record(s)?", "Confirmation", wxYES_NO | wxICON_EXCLAMATION) == wxYES)
   {
     wxArrayInt selection;
     lbList->GetSelections(selection);
@@ -882,7 +918,26 @@ void PasswordKeeperFrame::OnmiCopyNameSelected(wxCommandEvent& event)
 
 void PasswordKeeperFrame::OnmiCopyLoginSelected(wxCommandEvent& event)
 {
-  PutStringToClipboard(CurrentList()->GetRecord(CurrentLine()).login, "Login");
+  CRecord currentRecord = CurrentList()->GetRecord(CurrentLine());
+  if (!currentRecord.login.IsEmpty())
+  {
+    PutStringToClipboard(currentRecord.login, "Login");
+    return;
+  }
+  else
+  {
+    if (!currentRecord.email.IsEmpty())
+    {
+      PutStringToClipboard(currentRecord.email, "Email");
+      return;
+    }
+    else
+    {
+      PutStringToClipboard(currentRecord.name, "Record's name");
+      return;
+    }
+  }
+  // There's nothing that can be copied
 }
 
 void PasswordKeeperFrame::OnmiCopyEmailSelected(wxCommandEvent& event)

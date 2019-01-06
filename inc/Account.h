@@ -12,7 +12,8 @@ const static int AC_ERROR_ALREADY_EXISTS    = 1;
 const static int AC_ERROR_WRONG_LOGIN       = 2;
 const static int AC_ERROR_WRONG_PASSWORD    = 3;
 const static int AC_ERROR_WRITING           = 4;
-const static int AC_ERROR_UNAUTHORIZED      = 5;
+const static int AC_ERROR_READING           = 5;
+const static int AC_ERROR_UNAUTHORIZED      = 6;
 
 class CAccount
 {
@@ -37,6 +38,7 @@ public:
   // Content-related functions
   CContent* GetContent() { return &fContent; };
   const int SaveContent();
+  int MergeLocally(const wxString& fileName, const wxString& login, const wxString& password, wxString* outputLog = NULL);
 
   // Error handling
   const bool IsOk() const { return fErrorCode == AC_ERROR_SUCCESS; };

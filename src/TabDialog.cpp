@@ -28,7 +28,7 @@ TabDialog::TabDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const wxS
 	FlexGridSizer1 = new wxFlexGridSizer(0, 2, 0, 0);
 	StaticText1 = new wxStaticText(this, wxID_ANY, _("Name"), wxDefaultPosition, wxDefaultSize, 0, _T("wxID_ANY"));
 	FlexGridSizer1->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	edName = new wxTextCtrl(this, ID_TEXTCTRL1, _("Text"), wxDefaultPosition, wxSize(160,21), wxTE_PROCESS_ENTER, wxDefaultValidator, _T("ID_TEXTCTRL1"));
+	edName = new wxTextCtrl(this, ID_TEXTCTRL1, _("Text"), wxDefaultPosition, wxSize(160,-1), wxTE_PROCESS_ENTER, wxDefaultValidator, _T("ID_TEXTCTRL1"));
 	FlexGridSizer1->Add(edName, 1, wxALL|wxEXPAND, 5);
 	FlexGridSizer1->Add(-1,-1,1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StdDialogButtonSizer1 = new wxStdDialogButtonSizer();
@@ -36,7 +36,7 @@ TabDialog::TabDialog(wxWindow* parent,wxWindowID id,const wxPoint& pos,const wxS
 	StdDialogButtonSizer1->AddButton(new wxButton(this, wxID_CANCEL, wxEmptyString));
 	StdDialogButtonSizer1->Realize();
 	FlexGridSizer1->Add(StdDialogButtonSizer1, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
-	BoxSizer1->Add(FlexGridSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	BoxSizer1->Add(FlexGridSizer1, 1, wxALL|wxALIGN_CENTER_VERTICAL, 5);
 	SetSizer(BoxSizer1);
 	BoxSizer1->Fit(this);
 	BoxSizer1->SetSizeHints(this);

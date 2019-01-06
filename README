@@ -10,7 +10,7 @@ About:
   There also might be an Android application in the far future.
 
 Security:
-  AES256-CTR is used for local stored data. For a secure internet transactions
+  AES256-CTR is used for local stored data. For secure internet transactions
   I plan to use RSA for handshaking/verifications and AES256-CTR for content
   exchange.
 
@@ -19,17 +19,32 @@ Libraries:
   Cryptography is provided by crypto++ (cryptopp.com). Used version: 5.6.2
 
 Building/Compilation:
-  Under Windows, a binary can be compiled using Code::Blocks IDE and GCC 
-  (project included). You should set up correct paths and specifications for
-  your wxWidgets and crypto++ libraries in order to compile Password Keeper.
-  In the future there will be a makefile for different toolchains.
+  Windows
+    GCC (MinGW)
+      All you need is to say 'mingw32-make -f makefile.gcc'
+      Options (can be changed directly in the makefile or provided through
+      command line):
+        BUILD=debug/release (default - release)
+        UNICODE=yes/no (default - yes)
+        WX - you have to specify the path to your installation of wxWidgets
+          It should be a directory that contains 'include' and 'lib' subdirs.
+        CRYPTOPP - you have to specify the path to your crypto++ library.
 
-  Under Linux, you can compile a binary using GNUmakefile and GCC toolchain
-  (Code::Blocks project for Linux systems is also provided). Available options
-  for the makefile are BUILD=debug\release and STATIC=yes\no. Of course, you
-  have to have compiled and installed wxWidgets and crypto++ libraries with 
-  correct versions on your machine. In the future I will rework the makefile
-  for different toolchains as well.
+    Under Windows, a binary can be also compiled using Code::Blocks IDE
+    (project included). You should set up correct paths and specifications for
+    your wxWidgets and crypto++ libraries in order to compile the binary.
+
+  Linux
+    GCC
+      A makefile provided.
+      Options:
+        BUILD=debug/release (default - release)
+        STATIC=yes/no (default - no)
+      Of course, you have to have compiled and installed wxWidgets and crypto++
+      libraries with correct versions on your machine.
+
+    Under Linux, you can compile a binary using Code::Blocks project for Linux
+    systems, which is also provided.
 
 Version history:
   v0.1 alpha

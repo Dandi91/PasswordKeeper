@@ -24,10 +24,17 @@ class AuthDialog: public wxDialog
 {
 	public:
 
+	  typedef enum {
+      dbLogin,
+      dbChange,
+      dbMerge
+	  } DialogBehavior;
+
 		AuthDialog(wxWindow* parent,wxWindowID id=wxID_ANY,const wxPoint& pos=wxDefaultPosition,const wxSize& size=wxDefaultSize);
 		virtual ~AuthDialog();
 
     void ChangeBehavior();
+    void MergeBehavior(const wxString& fileName);
 
 		//(*Declarations(AuthDialog)
 		wxStdDialogButtonSizer* sbStdButtons;
@@ -43,6 +50,7 @@ class AuthDialog: public wxDialog
 		wxTextCtrl* edPasswordSec;
 		wxStaticText* newLabel;
 		wxButton* btBack;
+		wxButton* btRelocate;
 
 	protected:
 
@@ -53,11 +61,12 @@ class AuthDialog: public wxDialog
 		//*)
 
 		static const long ID_BTBACK;
+		static const long ID_BTRELOCATE;
 
 	private:
 
     int editorsSize;
-    bool behavior;
+    DialogBehavior behavior;
 
 		//(*Handlers(AuthDialog)
 		void OnbtNewClick(wxCommandEvent& event);
@@ -67,6 +76,7 @@ class AuthDialog: public wxDialog
 		DECLARE_EVENT_TABLE()
 
 		void OnModalClose(wxCommandEvent& event);
+		void OnRelocate(wxCommandEvent& event);
 		void OnBack(wxCommandEvent& event);
 		bool CheckBeforeClose();
 		void ChangeViewNewAccount(const bool state);

@@ -55,6 +55,7 @@ public:
   // Methods
   void Assign(const CRecordList& value);
   void Clear();
+  void Merge(const CRecordList& mergingList, wxString* outputLog = NULL);
   void Sort();
   void Serialize(wxMemoryOutputStream& stream) const;
   void Unserialize(wxMemoryInputStream& stream);
@@ -90,6 +91,7 @@ public:
 
   // Methods
   void Clear();
+  void Merge(const CContent& mergingContent, wxString* outputLog = NULL);
   void Sort();
   void Serialize(wxMemoryOutputStream& stream) const;
   void Unserialize(wxMemoryInputStream& stream);
